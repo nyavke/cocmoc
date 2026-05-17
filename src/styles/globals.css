@@ -1,0 +1,31 @@
+:root {
+  --font-mono: 'Space Mono', monospace;
+  --font-sans: 'Space Grotesk', sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  cursor: none !important;
+}
+
+html {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+  width: 100%;
+  background: #000;
+  overflow-x: hidden;
+}
+
+body {
+  height: 750vh;
+}
+
+::selection {
+  background: rgba(140, 80, 255, 0.3);
+}
