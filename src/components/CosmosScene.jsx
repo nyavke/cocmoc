@@ -182,12 +182,10 @@ export default function CosmosScene() {
       mesh.position.set(...pos); mesh.rotation.set(0.15, Math.random()*Math.PI, 0.08)
       scene.add(mesh); crystals.push(mesh)
       const eGeo=new THREE.EdgesGeometry(geo, 5)
-      const eMat=new THREE.LineBasicMaterial({ color:new THREE.Color(...colB).multiplyScalar(3), transparent:true, opacity:0.9, blending:THREE.AdditiveBlending, depthWrite:false })
+      const eMat=new THREE.LineBasicMaterial({ color:new THREE.Color(...colB).multiplyScalar(0.9), transparent:true, opacity:0.7, blending:THREE.AdditiveBlending, depthWrite:false })
       const e=new THREE.LineSegments(eGeo, eMat)
       e.position.set(...pos); e.rotation.copy(mesh.rotation)
       scene.add(e); edges.push(e)
-      const pl=new THREE.PointLight(new THREE.Color(...colB), 0.8, 25)
-      pl.position.set(...pos); scene.add(pl)
     })
 
     // ── BLACK HOLE ───────────────────────────────────────────────────────────
