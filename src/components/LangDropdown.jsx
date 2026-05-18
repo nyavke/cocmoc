@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useLang } from '../context/LangContext'
 
 const LANGS = [
-  { code: 'en', label: 'EN — English' },
-  { code: 'ru', label: 'RU — Русский' },
+  { code: 'en', label: 'EN' },
+  { code: 'ru', label: 'RU' },
 ]
 
 export default function LangDropdown({ style = {} }) {
@@ -74,7 +74,6 @@ export default function LangDropdown({ style = {} }) {
                 onMouseEnter={e => { e.currentTarget.style.background = 'rgba(140,80,255,0.07)'; e.currentTarget.style.color = 'rgba(255,255,255,0.85)' }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.color = active ? 'rgba(140,80,255,0.95)' : 'rgba(255,255,255,0.35)' }}
               >
-                <span style={{ fontSize: 8, opacity: active ? 1 : 0.3 }}>{active ? '✦' : '·'}</span>
                 {label}
               </button>
             )
