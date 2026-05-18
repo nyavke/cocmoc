@@ -10,6 +10,10 @@
   cursor: none !important;
 }
 
+@media (hover: none) and (pointer: coarse) {
+  *, *::before, *::after { cursor: auto !important; }
+}
+
 html {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

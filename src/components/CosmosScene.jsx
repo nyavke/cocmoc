@@ -304,6 +304,39 @@ export default function CosmosScene({ entered = false }) {
         }
       }
     }
+    // ── TOUCH NAVIGATION ────────────────────────────────────────────────────
+    let _touchLastY = 0, _touchVelocity = 0, _momentumRAF = null
+
+    const _sensitivity = () =>
+      (document.documentElement.scrollHeight - window.innerHeight) / (window.innerHeight * 4)
+
+    const onTouchStart = (e) => {
+      _touchLastY = e.touches[0].clientY
+      _touchVelocity = 0
+      if (_momentumRAF) { cancelAnimationFrame(_momentumRAF); _momentumRAF = null }
+    }
+    const onTouchMove = (e) => {
+      if (!enteredRef.current) return
+      e.preventDefault()
+      const dy = _touchLastY - e.touches[0].clientY
+      _touchLastY = e.touches[0].clientY
+      _touchVelocity = dy * 0.5 + _touchVelocity * 0.5
+      window.scrollBy(0, dy * _sensitivity())
+    }
+    const onTouchEnd = () => {
+      if (!enteredRef.current) return
+      const step = () => {
+        if (Math.abs(_touchVelocity) < 0.4) return
+        window.scrollBy(0, _touchVelocity * _sensitivity())
+        _touchVelocity *= 0.88
+        _momentumRAF = requestAnimationFrame(step)
+      }
+      _momentumRAF = requestAnimationFrame(step)
+    }
+    document.addEventListener('touchstart', onTouchStart, { passive: true })
+    document.addEventListener('touchmove',  onTouchMove,  { passive: false })
+    document.addEventListener('touchend',   onTouchEnd,   { passive: true })
+
     renderer.domElement.style.cursor = 'grab'
     window.addEventListener('scroll', onScroll, { passive:true })
     window.addEventListener('mousemove', onMouse)
@@ -447,10 +480,14 @@ export default function CosmosScene({ entered = false }) {
 
     return () => {
       cancelAnimationFrame(raf)
+      if (_momentumRAF) cancelAnimationFrame(_momentumRAF)
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('mousemove', onMouse)
       window.removeEventListener('mouseup', onMouseUp)
       window.removeEventListener('resize', onResize)
+      document.removeEventListener('touchstart', onTouchStart)
+      document.removeEventListener('touchmove',  onTouchMove)
+      document.removeEventListener('touchend',   onTouchEnd)
       renderer.domElement.removeEventListener('mousedown', onMouseDown)
       renderer.domElement.removeEventListener('click', onClick)
       mount.removeChild(renderer.domElement)
