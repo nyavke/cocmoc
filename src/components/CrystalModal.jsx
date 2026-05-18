@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
-import { playExit } from '../utils/audio'
+import { playExit, playTypeClick } from '../utils/audio'
 import CrystalPreview from './CrystalPreview'
 
 const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ·✦◈◉—/'
@@ -9,10 +9,11 @@ function ScrambleText({ text, delay = 0 }) {
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    let frame = 0, raf
+    let frame = 0, raf, prevDone = 0
     const run = () => {
       const p = Math.min(frame / 20, 1)
       const done = Math.floor(p * text.length)
+      if (done > prevDone) { playTypeClick(); prevDone = done }
       el.textContent = text.split('').map((c, i) =>
         c === ' ' ? ' ' : i < done ? c : CHARS[Math.floor(Math.random() * CHARS.length)]
       ).join('')
@@ -138,10 +139,11 @@ export default function CrystalModal({ idx, onClose }) {
         setBodyLines(prev => { const n=[...prev]; n[li]=''; return n })
         return
       }
-      let frame = 0
+      let frame = 0, prevDone = 0
       const run = () => {
         const p = Math.min(frame / 20, 1)
         const done = Math.floor(p * line.length)
+        if (done > prevDone) { playTypeClick(); prevDone = done }
         const s = line.split('').map((c, i) =>
           c === ' ' ? ' ' : i < done ? c : CHARS[Math.floor(Math.random() * CHARS.length)]
         ).join('')

@@ -85,6 +85,29 @@ export function playEnter(stationIdx) {
   })
 }
 
+// Typewriter click — short noise burst, globally throttled so overlapping scramblers don't stack
+let _lastClick = 0
+export function playTypeClick() {
+  const c = ctx(); if (!c) return
+  const now = c.currentTime
+  if (now - _lastClick < 0.028) return   // ~35 clicks/sec max
+  _lastClick = now
+  const len = Math.floor(c.sampleRate * 0.011)
+  const buf = c.createBuffer(1, len, c.sampleRate)
+  const d = buf.getChannelData(0)
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1
+  const src = c.createBufferSource(); src.buffer = buf
+  const filt = c.createBiquadFilter()
+  filt.type = 'bandpass'
+  filt.frequency.value = 3800 + Math.random() * 1800
+  filt.Q.value = 1.8
+  const g = c.createGain()
+  g.gain.setValueAtTime(0.032, now)
+  g.gain.exponentialRampToValueAtTime(0.001, now + 0.011)
+  src.connect(filt); filt.connect(g); g.connect(c.destination)
+  src.start(now)
+}
+
 // Crystal exit sound — descending tone
 export function playExit() {
   const c = ctx(); if (!c) return
