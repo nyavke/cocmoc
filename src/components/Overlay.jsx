@@ -34,6 +34,18 @@ function ScrambleText({ text, fast = false }) {
   return <span ref={ref}>{text}</span>
 }
 
+const STATION_POS = [
+  [  0.0,  0.0,    0],
+  [  2.5, -0.5,  -32],
+  [ -2.5,  0.5,  -64],
+  [  3.0, -1.0,  -96],
+  [ -2.0,  1.0, -128],
+  [  0.0,  0.0, -162],
+]
+const SECTORS = ['SOL-PRIME', 'NOVA-01', 'STELLAR-02', 'VOID-03', 'NEBULA-04', 'SINGULARITY']
+const lerp = (a, b, t) => a + (b - a) * t
+const fmtCoord = v => (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(3).padStart(6, '0')
+
 export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
   const { lang } = useLang()
   const t = T[lang]
@@ -54,6 +66,15 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
 
   const overlayOpacity = inBlackHole ? 0 : 1
   const counter = '0' + (Math.min(stationIdx, 4) + 1) + ' / 05'
+
+  const i0 = Math.min(stationIdx, 5)
+  const i1 = Math.min(i0 + 1, 5)
+  const sp = subProgress
+  const px = lerp(STATION_POS[i0][0], STATION_POS[i1][0], sp)
+  const py = lerp(STATION_POS[i0][1], STATION_POS[i1][1], sp)
+  const pz = lerp(STATION_POS[i0][2], STATION_POS[i1][2], sp)
+  const signalBars = Math.max(1, Math.round(5 + pz / 162 * 4))
+  const sector = SECTORS[Math.min(stationIdx, 5)]
 
   return (
     <div style={{
@@ -143,6 +164,43 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
             transition:'all 0.3s ease',
           }} />
         ))}
+      </div>
+
+      {/* ── Telemetry bottom-right */}
+      <div style={{
+        position: 'absolute', bottom: '8vh', right: 72,
+        display: 'flex', flexDirection: 'column', gap: 10,
+        alignItems: 'flex-end',
+      }}>
+        <span style={{ fontFamily: mono, fontSize: 8, letterSpacing: '0.35em', color: 'rgba(140,80,255,0.35)' }}>
+          ◈ TELEMETRY
+        </span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {[
+            ['SECTOR', sector],
+            ['VEC X',  fmtCoord(px)],
+            ['VEC Y',  fmtCoord(py)],
+            ['DEPTH',  fmtCoord(pz) + ' pc'],
+          ].map(([label, value]) => (
+            <div key={label} style={{ display: 'flex', gap: 14, alignItems: 'baseline' }}>
+              <span style={{ fontFamily: mono, fontSize: 7, letterSpacing: '0.22em', color: 'rgba(255,255,255,0.13)' }}>
+                {label}
+              </span>
+              <span style={{ fontFamily: mono, fontSize: 8, letterSpacing: '0.08em', color: 'rgba(140,80,255,0.6)', minWidth: 80, textAlign: 'right' }}>
+                {value}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 3, marginTop: 2 }}>
+          {[1,2,3,4,5].map(i => (
+            <div key={i} style={{
+              width: 16, height: 2,
+              background: i <= signalBars ? 'rgba(140,80,255,0.65)' : 'rgba(255,255,255,0.06)',
+              transition: 'background 0.6s ease',
+            }} />
+          ))}
+        </div>
       </div>
 
       {/* ── Descend hint on first station */}
