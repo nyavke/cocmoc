@@ -361,14 +361,6 @@ export default function CosmosScene({ entered = false }) {
       } else {
         mouseNDC.x = (e.clientX / window.innerWidth) * 2 - 1
         mouseNDC.y = -(e.clientY / window.innerHeight) * 2 + 1
-        raycaster.setFromCamera(mouseNDC, camera)
-        const hits = raycaster.intersectObjects(crystals)
-        const hIdx = hits.length > 0 ? crystals.indexOf(hits[0].object) : -1
-        if (hIdx !== prevHoverIdx.value) {
-          if (hIdx !== -1) triggerWave(hIdx)
-          prevHoverIdx.value = hIdx
-        }
-        renderer.domElement.style.cursor = hIdx !== -1 ? 'pointer' : 'grab'
       }
     }
     const onMouseDown = (e) => {
@@ -512,6 +504,18 @@ export default function CosmosScene({ entered = false }) {
       _lookDir.applyQuaternion(_qYaw).applyQuaternion(_qPitch)
       tmpV.copy(_camPos).addScaledVector(_lookDir, 20)
       camera.lookAt(tmpV)
+
+      // Hover detection — per-frame so camera matrix is always fresh
+      if (!state.isDragging) {
+        raycaster.setFromCamera(mouseNDC, camera)
+        const hHits = raycaster.intersectObjects(crystals)
+        const hIdx = hHits.length > 0 ? crystals.indexOf(hHits[0].object) : -1
+        if (hIdx !== prevHoverIdx.value) {
+          if (hIdx !== -1) triggerWave(hIdx)
+          prevHoverIdx.value = hIdx
+        }
+        renderer.domElement.style.cursor = hIdx !== -1 ? 'pointer' : 'grab'
+      }
 
       // Crystal animation
       crystals.forEach((m, i) => {
