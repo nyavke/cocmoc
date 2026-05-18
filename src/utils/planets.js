@@ -3,51 +3,51 @@ import * as THREE from 'three'
 const PLANET_DATA = [
   {
     name: 'Mercury',
-    pos: [-7, 2, -15], radius: 0.55,
+    pos: [-28, 14, -18], radius: 0.28,
     colA: [0.38, 0.32, 0.28], colB: [0.55, 0.48, 0.42], colC: [0.65, 0.60, 0.55],
-    atmCol: [0.6, 0.5, 0.4], atmStr: 0.3, bands: 4, rings: false, rotSpeed: 0.006,
+    atmCol: [0.6, 0.5, 0.4], atmStr: 0.12, bands: 4, rings: false, rotSpeed: 0.006,
   },
   {
     name: 'Venus',
-    pos: [10, -1.5, -42], radius: 0.95,
+    pos: [32, -10, -45], radius: 0.42,
     colA: [0.82, 0.65, 0.18], colB: [0.95, 0.80, 0.40], colC: [1.0, 0.90, 0.62],
-    atmCol: [1.0, 0.72, 0.15], atmStr: 2.2, bands: 6, rings: false, rotSpeed: 0.004,
+    atmCol: [1.0, 0.72, 0.15], atmStr: 0.35, bands: 6, rings: false, rotSpeed: 0.004,
   },
   {
     name: 'Earth',
-    pos: [-12, 4.5, -26], radius: 1.0,
+    pos: [-35, 18, -30], radius: 0.45,
     colA: [0.05, 0.18, 0.72], colB: [0.08, 0.52, 0.18], colC: [0.82, 0.92, 1.0],
-    atmCol: [0.25, 0.58, 1.0], atmStr: 1.8, bands: 5, rings: false, rotSpeed: 0.010,
+    atmCol: [0.25, 0.58, 1.0], atmStr: 0.30, bands: 5, rings: false, rotSpeed: 0.010,
   },
   {
     name: 'Mars',
-    pos: [8, -2.5, -78], radius: 0.65,
+    pos: [30, -15, -80], radius: 0.32,
     colA: [0.68, 0.18, 0.04], colB: [0.88, 0.42, 0.14], colC: [0.95, 0.65, 0.35],
-    atmCol: [1.0, 0.35, 0.08], atmStr: 0.5, bands: 5, rings: false, rotSpeed: 0.009,
+    atmCol: [1.0, 0.35, 0.08], atmStr: 0.12, bands: 5, rings: false, rotSpeed: 0.009,
   },
   {
     name: 'Jupiter',
-    pos: [-20, 10, -58], radius: 5.8,
+    pos: [-42, 22, -62], radius: 2.2,
     colA: [0.72, 0.50, 0.30], colB: [0.90, 0.70, 0.48], colC: [0.98, 0.85, 0.60],
-    atmCol: [1.0, 0.72, 0.35], atmStr: 0.8, bands: 14, rings: false, rotSpeed: 0.018,
+    atmCol: [1.0, 0.72, 0.35], atmStr: 0.20, bands: 14, rings: false, rotSpeed: 0.018,
   },
   {
     name: 'Saturn',
-    pos: [18, -5.5, -105], radius: 3.4,
+    pos: [38, -20, -108], radius: 1.6,
     colA: [0.82, 0.72, 0.38], colB: [0.94, 0.85, 0.55], colC: [0.98, 0.92, 0.72],
-    atmCol: [1.0, 0.88, 0.45], atmStr: 0.7, bands: 10, rings: true, rotSpeed: 0.015,
+    atmCol: [1.0, 0.88, 0.45], atmStr: 0.18, bands: 10, rings: true, rotSpeed: 0.015,
   },
   {
     name: 'Uranus',
-    pos: [-9.5, 8.5, -138], radius: 2.1,
+    pos: [-30, 20, -140], radius: 0.9,
     colA: [0.35, 0.78, 0.88], colB: [0.50, 0.90, 0.95], colC: [0.75, 0.95, 1.0],
-    atmCol: [0.38, 0.85, 1.0], atmStr: 1.6, bands: 3, rings: false, rotSpeed: 0.007,
+    atmCol: [0.38, 0.85, 1.0], atmStr: 0.22, bands: 3, rings: false, rotSpeed: 0.007,
   },
   {
     name: 'Neptune',
-    pos: [8.5, -4, -154], radius: 1.8,
+    pos: [28, -16, -155], radius: 0.8,
     colA: [0.08, 0.12, 0.82], colB: [0.12, 0.28, 1.0], colC: [0.25, 0.55, 1.0],
-    atmCol: [0.15, 0.38, 1.0], atmStr: 2.0, bands: 5, rings: false, rotSpeed: 0.008,
+    atmCol: [0.15, 0.38, 1.0], atmStr: 0.25, bands: 5, rings: false, rotSpeed: 0.008,
   },
 ]
 
@@ -179,10 +179,6 @@ export function addPlanets(scene) {
     const atmGeo = new THREE.SphereGeometry(p.radius * 1.14, 32, 32)
     const atmMat = atmosphereMat(p.atmCol, p.atmStr)
     group.add(new THREE.Mesh(atmGeo, atmMat))
-
-    // Subtle point light contribution
-    const pl = new THREE.PointLight(new THREE.Color(...p.atmCol), 0.25, p.radius * 10)
-    group.add(pl)
 
     let ringMat = null
     if (p.rings) {
