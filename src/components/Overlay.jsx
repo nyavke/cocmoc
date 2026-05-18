@@ -97,7 +97,7 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
       </div>
 
       {/* ── Main title bottom-left */}
-      <div style={{ position:'absolute', bottom:'18vh', left:40, maxWidth:'72vw' }}>
+      <div style={{ position:'absolute', bottom:'8vh', left:40, maxWidth:'72vw' }}>
         <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.4em', color:'rgba(140,80,255,0.6)', marginBottom:14 }}>
           <ScrambleText text={counter} />
         </div>
