@@ -127,6 +127,56 @@ export function playTypeClick() {
   src.start(now)
 }
 
+// Black hole entry — dramatic whoosh + bass drop + pitch sweep
+export function playBlackHole() {
+  if (!_soundEnabled) return
+  const c = ctx(); if (!c) return
+  const now = c.currentTime
+
+  // Whoosh: noise through bandpass sweeping 3kHz → 40Hz
+  const buf = c.createBuffer(1, c.sampleRate * 3, c.sampleRate)
+  const d = buf.getChannelData(0)
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1
+  const noise = c.createBufferSource(); noise.buffer = buf
+  const filt = c.createBiquadFilter()
+  filt.type = 'bandpass'
+  filt.frequency.setValueAtTime(3200, now)
+  filt.frequency.exponentialRampToValueAtTime(42, now + 1.8)
+  filt.Q.value = 0.7
+  const ng = c.createGain()
+  ng.gain.setValueAtTime(0, now)
+  ng.gain.linearRampToValueAtTime(0.55, now + 0.06)
+  ng.gain.exponentialRampToValueAtTime(0.001, now + 3.2)
+  noise.connect(filt); filt.connect(ng); ng.connect(c.destination)
+  noise.start(now)
+
+  // Deep bass dive
+  const bass = c.createOscillator()
+  const bg = c.createGain()
+  bass.type = 'sine'
+  bass.frequency.setValueAtTime(90, now)
+  bass.frequency.exponentialRampToValueAtTime(22, now + 2.2)
+  bg.gain.setValueAtTime(0, now)
+  bg.gain.linearRampToValueAtTime(0.7, now + 0.12)
+  bg.gain.exponentialRampToValueAtTime(0.001, now + 3.0)
+  bass.connect(bg); bg.connect(c.destination)
+  bass.start(now); bass.stop(now + 3.5)
+
+  // Harmonic pitch drops — 3 sines plunging into the singularity
+  ;[520, 1040, 2080].forEach((f0, i) => {
+    const o = c.createOscillator()
+    const g = c.createGain()
+    o.type = 'sine'
+    o.frequency.setValueAtTime(f0, now)
+    o.frequency.exponentialRampToValueAtTime(f0 * 0.05, now + 1.4)
+    g.gain.setValueAtTime(0, now)
+    g.gain.linearRampToValueAtTime(0.10 - i * 0.025, now + 0.04)
+    g.gain.exponentialRampToValueAtTime(0.001, now + 1.4)
+    o.connect(g); g.connect(c.destination)
+    o.start(now); o.stop(now + 1.6)
+  })
+}
+
 // Crystal exit sound — descending tone
 export function playExit() {
   if (!_soundEnabled) return

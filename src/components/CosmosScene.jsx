@@ -7,7 +7,7 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import Overlay from './Overlay'
 import ContactScreen from './ContactScreen'
 import CrystalModal from './CrystalModal'
-import { playChime, playEnter } from '../utils/audio'
+import { playChime, playEnter, playBlackHole } from '../utils/audio'
 import { buildCrystal, crystalMat } from '../utils/crystal'
 
 // ── CRYSTAL STATIONS ─────────────────────────────────────────────────────────
@@ -255,6 +255,7 @@ export default function CosmosScene() {
     const mouseNDC = { x: 0, y: 0 }
     const raycaster = new THREE.Raycaster()
     const prevStation = { value: -1 }
+    const prevInBH = { value: false }
 
     const onScroll = () => { state.scrollY = window.scrollY }
     const onMouse = (e) => {
@@ -375,6 +376,11 @@ export default function CosmosScene() {
         prevStation.value = si
         if (sf <= CRYSTAL_THRESH) playChime(si)
       }
+
+      // Black hole entry whoosh
+      const inBHZone = sf > CRYSTAL_THRESH
+      if (inBHZone && !prevInBH.value) playBlackHole()
+      prevInBH.value = inBHZone
 
       // Camera lerp
       state.camZ += (targetZ - state.camZ) * 0.06
