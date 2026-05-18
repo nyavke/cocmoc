@@ -36,23 +36,6 @@ A scroll-driven cosmic experience — the user flies through 5 crystal stations 
 
 ---
 
-## Getting started
-
-```bash
-npm install
-npm run dev
-```
-
-Open `http://localhost:5173`.
-
-### Build
-
-```bash
-npm run build
-npm run preview
-```
-
----
 
 ## Project structure
 
