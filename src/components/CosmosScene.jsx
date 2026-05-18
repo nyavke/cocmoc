@@ -7,6 +7,7 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import Overlay from './Overlay'
 import ContactScreen from './ContactScreen'
 import CrystalModal from './CrystalModal'
+import CrystalHUD from './CrystalHUD'
 import { playChime, playEnter } from '../utils/audio'
 import { buildCrystal, crystalMat } from '../utils/crystal'
 
@@ -393,6 +394,7 @@ export default function CosmosScene() {
     <>
       <div ref={mountRef} style={{ position:'fixed', inset:0, zIndex:0 }} />
       <Overlay stationIdx={stationIdx} subProgress={subProgress} inBlackHole={inBlackHole} />
+      <CrystalHUD stationIdx={stationIdx} inBlackHole={inBlackHole} />
       <ContactScreen visible={inBlackHole} />
       {activeCrystal !== null && (
         <CrystalModal idx={activeCrystal} onClose={() => setActiveCrystal(null)} />
