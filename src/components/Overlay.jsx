@@ -66,13 +66,7 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
 
       {/* ── Logo + hints top-left */}
       <div style={{ position:'absolute', top:32, left:40, display:'flex', flexDirection:'column', gap:14 }}>
-        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-          <span style={{
-            fontFamily: mono, fontSize: 11, color: 'rgba(140,80,255,0.8)',
-            textShadow: '0 0 12px rgba(140,80,255,0.6)',
-            display: 'inline-block',
-            animation: 'overlay-spin 12s linear infinite',
-          }}>✦</span>
+        <div style={{ display:'flex', alignItems:'center' }}>
           <span style={{ fontFamily:mono, fontSize:10, letterSpacing:'0.4em', color:'rgba(255,255,255,0.55)', fontWeight:700 }}>
             <ScrambleText text="COCMOC.RU" />
           </span>
