@@ -1,12 +1,10 @@
 let _soundEnabled = false
 export function setSoundEnabled(v) {
   _soundEnabled = v
-  if (_ambGain) {
-    const c = ctx(); if (!c) return
-    const now = c.currentTime
-    _ambGain.gain.cancelScheduledValues(now)
-    _ambGain.gain.setValueAtTime(_ambGain.gain.value, now)
-    _ambGain.gain.linearRampToValueAtTime(v ? AMB_VOL : 0, now + 0.8)
+  if (v) {
+    if (_ambAudio) { _ambAudio.play().catch(() => {}); _fadeAmbTo(0.28) }
+  } else {
+    _fadeAmbTo(0, () => { if (_ambAudio) _ambAudio.pause() })
   }
 }
 export function isSoundEnabled() { return _soundEnabled }
@@ -202,95 +200,46 @@ export function playExit() {
   o.start(now); o.stop(now + 0.4)
 }
 
-// ── Ambient music (C418-style sparse piano) ───────────────────────────────────
-const AMB_VOL = 1.0
-// A minor pentatonic — 3 octaves, melancholic and cosmic
-const _AMB_SCALE = [110, 130.81, 146.83, 164.81, 196, 220, 261.63, 293.66, 329.63, 392, 440, 523.25, 587.33]
+// ── Ambient music ─────────────────────────────────────────────────────────────
+let _ambAudio = null
+let _ambFadeTimer = null
 
-let _ambGain = null
-let _ambNodes = []
-let _ambSubOscs = []
-let _ambTimeout = null
-
-function _pianoNote(c, masterGain, freq) {
-  const now = c.currentTime
-  // Piano tone: fundamental + overtones, each decaying at its own rate
-  ;[
-    [1.0,  0.065, 0.008, 3.2],
-    [2.0,  0.026, 0.006, 2.0],
-    [3.0,  0.011, 0.005, 1.3],
-    [4.2,  0.004, 0.004, 0.9],
-  ].forEach(([ratio, vol, att, dec]) => {
-    const o = c.createOscillator()
-    const g = c.createGain()
-    o.type = 'sine'; o.frequency.value = freq * ratio
-    g.gain.setValueAtTime(0, now)
-    g.gain.linearRampToValueAtTime(vol, now + att)
-    g.gain.exponentialRampToValueAtTime(0.0001, now + dec)
-    o.connect(g); g.connect(masterGain)
-    o.start(now); o.stop(now + dec + 0.1)
-  })
-}
-
-function _scheduleAmbNote() {
-  const delay = 1800 + Math.random() * 7000
-  _ambTimeout = setTimeout(() => {
-    if (!_ambGain) return
-    const c = ctx(); if (!c) return
-    const idx = Math.floor(Math.random() * _AMB_SCALE.length)
-    _pianoNote(c, _ambGain, _AMB_SCALE[idx])
-    // 35% chance of a second note shortly after (soft interval)
-    if (Math.random() < 0.35) {
-      const idx2 = Math.min(idx + 2 + Math.floor(Math.random() * 3), _AMB_SCALE.length - 1)
-      setTimeout(() => { if (_ambGain) _pianoNote(c, _ambGain, _AMB_SCALE[idx2]) }, 80 + Math.random() * 130)
+function _fadeAmbTo(target, onDone) {
+  if (_ambFadeTimer) { clearInterval(_ambFadeTimer); _ambFadeTimer = null }
+  if (!_ambAudio) return
+  const step = target > (_ambAudio.volume || 0) ? 0.01 : -0.01
+  _ambFadeTimer = setInterval(() => {
+    if (!_ambAudio) { clearInterval(_ambFadeTimer); return }
+    const next = _ambAudio.volume + step
+    if ((step > 0 && next >= target) || (step < 0 && next <= target)) {
+      _ambAudio.volume = target
+      clearInterval(_ambFadeTimer); _ambFadeTimer = null
+      if (onDone) onDone()
+    } else {
+      _ambAudio.volume = Math.max(0, Math.min(1, next))
     }
-    _scheduleAmbNote()
-  }, delay)
+  }, 40)
 }
 
 export function startAmbient() {
-  if (_ambTimeout !== null || _ambNodes.length > 0) return
-  const c = ctx(); if (!c) return
-  const now = c.currentTime
-
-  _ambGain = c.createGain()
-  _ambGain.gain.setValueAtTime(0, now)
-  if (_soundEnabled) _ambGain.gain.linearRampToValueAtTime(AMB_VOL, now + 3)
-  _ambGain.connect(c.destination)
-
-  // Barely-there sub pad — just enough to feel the space
-  ;[55, 55.18].forEach(f => {
-    const o = c.createOscillator()
-    const g = c.createGain()
-    o.type = 'sine'; o.frequency.value = f; g.gain.value = 0.018
-    o.connect(g); g.connect(_ambGain)
-    o.start(now)
-    _ambNodes.push(o); _ambSubOscs.push(o)
-  })
-
-  // First note after a short natural pause
-  setTimeout(_scheduleAmbNote, 1500 + Math.random() * 2500)
+  if (_ambAudio) return
+  _ambAudio = new Audio('/music/ambient.mp3')
+  _ambAudio.loop = true
+  _ambAudio.volume = 0
+  if (_soundEnabled) {
+    _ambAudio.play().catch(() => {})
+    _fadeAmbTo(0.28)
+  }
 }
 
 export function stopAmbient() {
-  if (_ambTimeout) { clearTimeout(_ambTimeout); _ambTimeout = null }
-  if (!_ambGain) return
-  const c = ctx(); if (!c) return
-  const now = c.currentTime
-  _ambGain.gain.cancelScheduledValues(now)
-  _ambGain.gain.setValueAtTime(_ambGain.gain.value, now)
-  _ambGain.gain.linearRampToValueAtTime(0, now + 2)
-  const nodes = [..._ambNodes]
-  _ambNodes = []; _ambSubOscs = []; _ambGain = null
-  setTimeout(() => nodes.forEach(n => { try { n.stop() } catch (_) {} }), 2200)
+  _fadeAmbTo(0, () => {
+    if (_ambAudio) { _ambAudio.pause(); _ambAudio.src = ''; _ambAudio = null }
+  })
 }
 
-// t=0 → normal space  t=1 → deep black hole (sub pad sinks lower)
+// t=0 → normal  t=1 → black hole (music slows slightly)
 export function setAmbientMood(t) {
-  if (!_ambSubOscs.length) return
-  const c = ctx(); if (!c) return
-  const now = c.currentTime
-  ;[55, 55.18].forEach((base, i) => {
-    _ambSubOscs[i].frequency.setTargetAtTime(base - t * 14, now, 2.0)
-  })
+  if (!_ambAudio) return
+  _ambAudio.playbackRate = Math.max(0.75, 1.0 - t * 0.18)
 }
