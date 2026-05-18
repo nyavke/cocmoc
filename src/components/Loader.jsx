@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
+import { useLang } from '../context/LangContext'
+import { T } from '../utils/i18n'
 
 const GLYPHS = '✦ ✧ ◈ ◉ ⬡ ❋ ◎ ✺ ⊹ ✵'.split(' ')
 
 export default function Loader({ done }) {
+  const { lang } = useLang()
+  const t = T[lang].ui
   const [glyphs, setGlyphs] = useState(Array(12).fill('·'))
   const [exiting, setExiting] = useState(false)
   const [pct, setPct] = useState(0)
@@ -67,7 +71,7 @@ export default function Loader({ done }) {
         color: 'rgba(255,255,255,0.08)',
         textTransform: 'uppercase',
         marginTop: 8,
-      }}>INITIALIZING STELLAR FIELD</div>
+      }}>{t.loader}</div>
     </div>
   )
 }

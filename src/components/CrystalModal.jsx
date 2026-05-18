@@ -1,6 +1,8 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { playExit, playTypeClick } from '../utils/audio'
 import CrystalPreview from './CrystalPreview'
+import { useLang } from '../context/LangContext'
+import { T } from '../utils/i18n'
 
 const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ·✦◈◉—/'
 
@@ -111,9 +113,14 @@ export const MODAL_DATA = [
 ]
 
 export default function CrystalModal({ idx, onClose }) {
-  const data = MODAL_DATA[idx]
+  const { lang } = useLang()
+  const t = T[lang]
+  const base = MODAL_DATA[idx]
+  const text = t.modal[idx]
+  const data = { ...base, title: text.title, tag: text.tag, body: text.body, stats: text.stats }
   const [phase, setPhase] = useState('entering')
   const [bodyLines, setBodyLines] = useState(() => data.body.map(() => ''))
+  useEffect(() => { setBodyLines(data.body.map(() => '')) }, [lang])
   const spotRef = useRef(null)
   const mono = "'Space Mono', monospace"
   const sans = "'Space Grotesk', sans-serif"
@@ -155,7 +162,7 @@ export default function CrystalModal({ idx, onClose }) {
       timers[li] = setTimeout(() => { rafs[li] = requestAnimationFrame(run) }, 320 + li * 75)
     })
     return () => { timers.forEach(clearTimeout); rafs.forEach(cancelAnimationFrame) }
-  }, [])
+  }, [lang])
 
   // Close handler
   const close = useCallback(() => {
@@ -359,7 +366,7 @@ export default function CrystalModal({ idx, onClose }) {
         color: 'rgba(255,255,255,0.1)',
         animation: 'fadeUp 0.4s 1.0s ease both',
       }}>
-        <ScrambleText text="PRESS ESC TO CLOSE" delay={1000} />
+        <ScrambleText text={t.ui.escHint} delay={1000} />
       </div>
 
       <style>{`

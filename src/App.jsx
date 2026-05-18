@@ -3,6 +3,7 @@ import Loader from './components/Loader'
 import CosmosScene from './components/CosmosScene'
 import WelcomeScreen from './components/WelcomeScreen'
 import Cursor from './components/Cursor'
+import { LangProvider } from './context/LangContext'
 
 export default function App() {
   const [ready, setReady] = useState(false)
@@ -14,11 +15,11 @@ export default function App() {
   }, [])
 
   return (
-    <>
+    <LangProvider>
       <Cursor />
       <Loader done={ready} />
       {ready && <CosmosScene entered={entered} />}
       {ready && !entered && <WelcomeScreen onEnter={() => setEntered(true)} />}
-    </>
+    </LangProvider>
   )
 }

@@ -1,14 +1,7 @@
 import { useRef, useEffect, useState } from 'react'
 import { playTypeClick, setSoundEnabled } from '../utils/audio'
-
-const STATIONS = [
-  { label: 'COCMOC.RU',    sub: 'Creating the next onchain civilization',    tag: 'EST. 2024' },
-  { label: 'NOVA PROTOCOL',  sub: 'Decentralized infrastructure · 10K nodes',  tag: 'INFRASTRUCTURE' },
-  { label: 'STELLAR MARKET', sub: 'Onchain economy without borders · $2.4B',   tag: 'ECONOMY' },
-  { label: 'VOID IDENTITY',  sub: 'Self-sovereign identity · 2.1M citizens',   tag: 'IDENTITY' },
-  { label: 'NEBULA GRID',    sub: 'Distributed stellar compute · 840 PFLOPS',  tag: 'COMPUTE' },
-  { label: 'THE SINGULARITY',sub: 'Beyond the event horizon · ∞',              tag: '∞' },
-]
+import { useLang } from '../context/LangContext'
+import { T } from '../utils/i18n'
 
 const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ·'
 
@@ -42,20 +35,27 @@ function ScrambleText({ text, fast = false }) {
 }
 
 export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
-  const s = STATIONS[Math.min(stationIdx, STATIONS.length - 1)]
+  const { lang, setLang } = useLang()
+  const t = T[lang]
+  const s = t.stations[Math.min(stationIdx, t.stations.length - 1)]
   const isBH = stationIdx >= 5
   const mono = "'Space Mono', monospace"
   const sans = "'Space Grotesk', sans-serif"
   const [soundOn, setSoundOn] = useState(true)
   const [soundHoverKey, setSoundHoverKey] = useState(0)
+  const [langKey, setLangKey] = useState(0)
 
-  // Sync default sound state to audio module on mount
   useEffect(() => { setSoundEnabled(true) }, [])
 
   const toggleSound = () => {
     const next = !soundOn
     setSoundOn(next)
     setSoundEnabled(next)
+  }
+
+  const toggleLang = () => {
+    setLang(l => l === 'en' ? 'ru' : 'en')
+    setLangKey(k => k + 1)
   }
 
   const overlayOpacity = inBlackHole ? 0 : 1
@@ -85,7 +85,7 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
 
         <div style={{ display:'flex', flexDirection:'column', gap:8, paddingLeft:2 }}>
           <span style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.18em', color:'rgba(255,255,255,0.45)' }}>
-            <ScrambleText text="Scroll down to discover." fast />
+            <ScrambleText text={t.ui.scroll} fast />
           </span>
           <button
             onClick={toggleSound}
@@ -98,7 +98,21 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
               transition: 'color 0.3s ease',
             }}
           >
-            <ScrambleText key={soundHoverKey} text={soundOn ? '♪ Sound: On' : '♪× Sound: Off'} fast />
+            <ScrambleText key={soundHoverKey} text={soundOn ? t.ui.soundOn : t.ui.soundOff} fast />
+          </button>
+          <button
+            onClick={toggleLang}
+            style={{
+              fontFamily: mono, fontSize: 9, letterSpacing: '0.18em',
+              color: 'rgba(255,255,255,0.35)',
+              background: 'none', border: 'none', cursor: 'pointer',
+              padding: 0, textAlign: 'left', pointerEvents: 'auto',
+              transition: 'color 0.3s ease',
+            }}
+            onMouseEnter={e => e.currentTarget.style.color = 'rgba(140,80,255,0.7)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}
+          >
+            <ScrambleText key={langKey} text={lang === 'en' ? 'EN · RU' : 'RU · EN'} fast />
           </button>
         </div>
       </div>
@@ -135,7 +149,7 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
         display:'flex', flexDirection:'column', alignItems:'center', gap:8,
       }}>
         <span style={{ fontFamily:mono, fontSize:8, letterSpacing:'0.3em', color:'rgba(255,255,255,0.25)', writingMode:'vertical-rl', marginBottom:12 }}>
-          <ScrambleText text="SCROLL" />
+          <ScrambleText text={t.ui.scrollBar} />
         </span>
         <div style={{ width:1, height:120, background:'rgba(140,80,255,0.1)', position:'relative' }}>
           <div style={{
@@ -166,7 +180,7 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
         }}>
           <div style={{ width:1, height:36, background:'linear-gradient(to bottom,transparent,rgba(140,80,255,0.45))' }} />
           <span style={{ fontFamily:mono, fontSize:8, letterSpacing:'0.4em', color:'rgba(255,255,255,0.3)' }}>
-            <ScrambleText text="DESCEND" />
+            <ScrambleText text={t.ui.descend} fast />
           </span>
         </div>
       )}

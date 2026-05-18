@@ -1,6 +1,10 @@
 import { useState } from 'react'
+import { useLang } from '../context/LangContext'
+import { T } from '../utils/i18n'
 
 export default function WelcomeScreen({ onEnter }) {
+  const { lang } = useLang()
+  const t = T[lang].ui
   const [exiting, setExiting] = useState(false)
   const mono = "'Space Mono', monospace"
   const sans = "'Space Grotesk', sans-serif"
@@ -40,14 +44,14 @@ export default function WelcomeScreen({ onEnter }) {
           color: 'rgba(255,255,255,0.92)',
           margin: 0, textAlign: 'center',
         }}>
-          The next civilization
+          {t.tagline}
         </h1>
 
         <p style={{
           fontFamily: mono, fontSize: 9, letterSpacing: '0.28em',
           color: 'rgba(255,255,255,0.22)', margin: 0,
         }}>
-          ONCHAIN · DECENTRALIZED · COSMIC
+          {t.tagline2}
         </p>
 
         <button
@@ -73,7 +77,7 @@ export default function WelcomeScreen({ onEnter }) {
             e.currentTarget.style.boxShadow = 'none'
           }}
         >
-          ENTER
+          {t.enter}
         </button>
       </div>
 

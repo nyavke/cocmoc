@@ -1,4 +1,6 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
+import { useLang } from '../context/LangContext'
+import { T } from '../utils/i18n'
 
 const NAME = 'NYAVKE'
 
@@ -110,6 +112,8 @@ function LinkItem({ display, href, glow, label }) {
 }
 
 export default function ContactScreen({ visible }) {
+  const { lang } = useLang()
+  const t = T[lang].ui
   const mono = "'Space Mono', monospace"
   const sans = "'Space Grotesk', sans-serif"
 
@@ -169,7 +173,7 @@ export default function ContactScreen({ visible }) {
         fontFamily: mono, fontSize: 9, letterSpacing: '0.3em',
         color: 'rgba(255,255,255,0.05)',
         pointerEvents: 'none',
-      }}>THE SINGULARITY</div>
+      }}>{t.singularity}</div>
 
       {/* Main content */}
       <div style={{
@@ -226,7 +230,7 @@ export default function ContactScreen({ visible }) {
           fontFamily: mono, fontSize: 9, letterSpacing: '0.4em',
           color: 'rgba(255,255,255,0.05)',
         }}>
-          ✦ 2024 · ALL RIGHTS RESERVED
+          {t.rights}
         </span>
       </div>
 
