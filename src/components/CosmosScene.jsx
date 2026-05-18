@@ -377,10 +377,9 @@ export default function CosmosScene() {
         if (sf <= CRYSTAL_THRESH) playChime(si)
       }
 
-      // Black hole entry whoosh
-      const inBHZone = sf > CRYSTAL_THRESH
-      if (inBHZone && !prevInBH.value) playBlackHole()
-      prevInBH.value = inBHZone
+      // Black hole entry whoosh — fires when actually crossing the event horizon
+      if (inBH && !prevInBH.value) playBlackHole()
+      prevInBH.value = inBH
 
       // Camera lerp
       state.camZ += (targetZ - state.camZ) * 0.06
