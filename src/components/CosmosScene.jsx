@@ -342,13 +342,15 @@ export default function CosmosScene() {
       // Camera lerp
       state.camZ += (targetZ - state.camZ) * 0.06
 
-      // Look target
+      // Look target — interpolate between current and next station so last crystal aligns correctly
       let lookX, lookY, lookZ
       if (si < N) {
-        const cst = STATIONS[Math.min(si, N-1)]
-        lookX = cst.pos[0] * 0.3 + state.mouseX * 0.4
-        lookY = cst.pos[1] * 0.2 + state.mouseY * 0.25
-        lookZ = cst.pos[2]
+        const ease = sp*sp*(3-2*sp)
+        const cst0 = STATIONS[si]
+        const cst1 = STATIONS[Math.min(si + 1, N - 1)]
+        lookX = THREE.MathUtils.lerp(cst0.pos[0], cst1.pos[0], ease) * 0.3 + state.mouseX * 0.4
+        lookY = THREE.MathUtils.lerp(cst0.pos[1], cst1.pos[1], ease) * 0.2 + state.mouseY * 0.25
+        lookZ = THREE.MathUtils.lerp(cst0.pos[2], cst1.pos[2], ease)
       } else {
         lookX = state.mouseX * 0.2; lookY = state.mouseY * 0.15; lookZ = BH_POS[2]
       }
