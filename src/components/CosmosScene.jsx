@@ -248,7 +248,9 @@ export default function CosmosScene() {
     // ── STATE ────────────────────────────────────────────────────────────────
     const state = {
       scrollY:0, camZ:20, camX:0, camY:0, mouseX:0, mouseY:0, tX:0, tY:0,
-      dragYaw:0, dragPitch:0, isDragging:false, hasDragged:false, lastDragX:0, lastDragY:0,
+      dragYaw:0, dragPitch:0,         // smoothed current
+      dragYawT:0, dragPitchT:0,       // targets (reset to 0 on release)
+      isDragging:false, hasDragged:false, lastDragX:0, lastDragY:0,
     }
     const mouseNDC = { x: 0, y: 0 }
     const raycaster = new THREE.Raycaster()
@@ -262,9 +264,8 @@ export default function CosmosScene() {
         const dx = e.clientX - state.lastDragX
         const dy = e.clientY - state.lastDragY
         if (Math.abs(dx) > 1 || Math.abs(dy) > 1) state.hasDragged = true
-        state.dragYaw   -= dx * 0.004
-        state.dragPitch -= dy * 0.004
-        state.dragPitch  = Math.max(-Math.PI * 0.48, Math.min(Math.PI * 0.48, state.dragPitch))
+        state.dragYawT   = Math.max(-0.55, Math.min(0.55, state.dragYawT   - dx * 0.003))
+        state.dragPitchT = Math.max(-0.30, Math.min(0.30, state.dragPitchT - dy * 0.003))
         state.lastDragX  = e.clientX
         state.lastDragY  = e.clientY
       } else {
@@ -285,6 +286,8 @@ export default function CosmosScene() {
     }
     const onMouseUp = () => {
       state.isDragging = false
+      state.dragYawT   = 0  // spring back to center
+      state.dragPitchT = 0
       renderer.domElement.style.cursor = 'grab'
     }
     const onClick = (e) => {
@@ -390,6 +393,11 @@ export default function CosmosScene() {
       }
       state.camX += (lookX - state.camX) * 0.04
       state.camY += (lookY - state.camY) * 0.04
+
+      // Smooth drag: follow target while dragging, spring back to 0 on release
+      const dragLerp = state.isDragging ? 0.12 : 0.06
+      state.dragYaw   += (state.dragYawT   - state.dragYaw)   * dragLerp
+      state.dragPitch += (state.dragPitchT - state.dragPitch) * dragLerp
 
       _camPos.set(state.camX * 0.25, state.camY * 0.18, state.camZ)
       camera.position.copy(_camPos)
