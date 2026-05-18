@@ -2,6 +2,30 @@ import { useEffect, useRef, useCallback, useState } from 'react'
 import { playExit } from '../utils/audio'
 import CrystalPreview from './CrystalPreview'
 
+const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ·✦◈◉—/'
+
+function ScrambleText({ text, delay = 0 }) {
+  const ref = useRef(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    let frame = 0, raf
+    const run = () => {
+      const p = Math.min(frame / 20, 1)
+      const done = Math.floor(p * text.length)
+      el.textContent = text.split('').map((c, i) =>
+        c === ' ' ? ' ' : i < done ? c : CHARS[Math.floor(Math.random() * CHARS.length)]
+      ).join('')
+      frame++
+      if (frame <= 30) raf = requestAnimationFrame(run)
+      else el.textContent = text
+    }
+    const tid = setTimeout(() => { raf = requestAnimationFrame(run) }, delay)
+    return () => { clearTimeout(tid); cancelAnimationFrame(raf) }
+  }, [text, delay])
+  return <span ref={ref} style={{ opacity: 0, animation: `scrambleFadeIn 0.01s ${delay}ms both` }}>{text}</span>
+}
+
 export const MODAL_DATA = [
   {
     title: 'COCMOC.RU',
@@ -87,7 +111,8 @@ export const MODAL_DATA = [
 
 export default function CrystalModal({ idx, onClose }) {
   const data = MODAL_DATA[idx]
-  const [phase, setPhase] = useState('entering') // entering | visible | exiting
+  const [phase, setPhase] = useState('entering')
+  const [bodyLines, setBodyLines] = useState(() => data.body.map(() => ''))
   const spotRef = useRef(null)
   const mono = "'Space Mono', monospace"
   const sans = "'Space Grotesk', sans-serif"
@@ -103,6 +128,31 @@ export default function CrystalModal({ idx, onClose }) {
   useEffect(() => {
     const t = setTimeout(() => setPhase('visible'), 40)
     return () => clearTimeout(t)
+  }, [])
+
+  // Body scramble — shared state keeps both x-ray layers in sync
+  useEffect(() => {
+    const timers = [], rafs = []
+    data.body.forEach((line, li) => {
+      if (!line.trim()) {
+        setBodyLines(prev => { const n=[...prev]; n[li]=''; return n })
+        return
+      }
+      let frame = 0
+      const run = () => {
+        const p = Math.min(frame / 20, 1)
+        const done = Math.floor(p * line.length)
+        const s = line.split('').map((c, i) =>
+          c === ' ' ? ' ' : i < done ? c : CHARS[Math.floor(Math.random() * CHARS.length)]
+        ).join('')
+        setBodyLines(prev => { const n=[...prev]; n[li]=s; return n })
+        frame++
+        if (frame <= 30) rafs[li] = requestAnimationFrame(run)
+        else setBodyLines(prev => { const n=[...prev]; n[li]=line; return n })
+      }
+      timers[li] = setTimeout(() => { rafs[li] = requestAnimationFrame(run) }, 320 + li * 75)
+    })
+    return () => { timers.forEach(clearTimeout); rafs.forEach(cancelAnimationFrame) }
   }, [])
 
   // Close handler
@@ -191,7 +241,7 @@ export default function CrystalModal({ idx, onClose }) {
           <span style={{
             fontFamily: mono, fontSize: 9, letterSpacing: '0.35em',
             color: accent, opacity: 0.8,
-          }}>✦ {data.tag}</span>
+          }}>✦ <ScrambleText text={data.tag} delay={80} /></span>
         </div>
         <button
           onClick={close}
@@ -218,7 +268,7 @@ export default function CrystalModal({ idx, onClose }) {
         position: 'relative', zIndex: 2,
         animation: 'fadeUp 0.55s 0.22s ease both',
       }}>
-        {data.title}
+        <ScrambleText text={data.title} delay={180} />
       </h2>
 
       {/* ── DIVIDER ──────────────────────────────────────────────────────── */}
@@ -233,19 +283,21 @@ export default function CrystalModal({ idx, onClose }) {
       {/* ── X-RAY TEXT BODY ──────────────────────────────────────────────── */}
       <div style={{ position: 'relative', zIndex: 2, flex: 1 }}>
         {/* Base layer — dim gray */}
-        <pre style={{
+        <div style={{
           fontFamily: sans, fontWeight: 300,
           fontSize: 'clamp(18px,2.5vw,32px)',
           lineHeight: 1.65, letterSpacing: '-0.01em',
           color: 'rgba(160,150,175,0.22)',
-          whiteSpace: 'pre-line', margin: 0,
-          animation: 'fadeUp 0.6s 0.38s ease both',
         }}>
-          {bodyText}
-        </pre>
+          {bodyLines.map((line, i) =>
+            line === ''
+              ? <div key={i} style={{ height: '1.65em' }} />
+              : <div key={i}>{line || ' '}</div>
+          )}
+        </div>
 
-        {/* Spotlight layer — bright, masked by mouse radial gradient */}
-        <pre
+        {/* Spotlight layer — bright, masked by mouse */}
+        <div
           ref={spotRef}
           style={{
             position: 'absolute', top: 0, left: 0, right: 0,
@@ -253,16 +305,17 @@ export default function CrystalModal({ idx, onClose }) {
             fontSize: 'clamp(18px,2.5vw,32px)',
             lineHeight: 1.65, letterSpacing: '-0.01em',
             color: 'rgba(242,238,252,0.92)',
-            whiteSpace: 'pre-line', margin: 0,
             textShadow: `0 0 12px rgba(255,255,255,0.55), 0 0 28px rgba(${accentR},${accentG},${accentB},0.3)`,
-            // Initial mask — will update on mouse move
             WebkitMaskImage: 'radial-gradient(circle 230px at 50% 50%, black 0%, black 38%, transparent 68%)',
-            maskImage:        'radial-gradient(circle 230px at 50% 50%, black 0%, black 38%, transparent 68%)',
-            animation: 'fadeUp 0.6s 0.38s ease both',
+            maskImage:       'radial-gradient(circle 230px at 50% 50%, black 0%, black 38%, transparent 68%)',
           }}
         >
-          {bodyText}
-        </pre>
+          {bodyLines.map((line, i) =>
+            line === ''
+              ? <div key={i} style={{ height: '1.65em' }} />
+              : <div key={i}>{line || ' '}</div>
+          )}
+        </div>
       </div>
 
       {/* ── DIVIDER 2 ────────────────────────────────────────────────────── */}
@@ -289,7 +342,7 @@ export default function CrystalModal({ idx, onClose }) {
                   color: accent,
                   textShadow: `0 0 16px rgba(${accentR},${accentG},${accentB},0.5)`,
                 }}>
-                  {s}
+                  <ScrambleText text={s} delay={780 + i * 100} />
                 </span>
               </div>
             ))}
@@ -304,10 +357,11 @@ export default function CrystalModal({ idx, onClose }) {
         color: 'rgba(255,255,255,0.1)',
         animation: 'fadeUp 0.4s 1.0s ease both',
       }}>
-        PRESS ESC TO CLOSE
+        <ScrambleText text="PRESS ESC TO CLOSE" delay={1000} />
       </div>
 
       <style>{`
+        @keyframes scrambleFadeIn { to { opacity: 1; } }
         @keyframes crystalFlash {
           0%   { opacity: 0.35; }
           100% { opacity: 0; }
