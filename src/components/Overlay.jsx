@@ -226,11 +226,12 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
         </div>
       </div>
 
-      {/* ── UTC clock bottom-center */}
+      {/* ── UTC clock top-center */}
       <div style={{
-        position:'absolute', bottom:20, left:'50%', transform:'translateX(-50%)',
-        fontFamily:mono, fontSize:8, letterSpacing:'0.35em',
-        color:'rgba(255,255,255,0.18)',
+        position:'absolute', top:36, left:'50%', transform:'translateX(-50%)',
+        fontFamily:mono, fontSize:9, letterSpacing:'0.35em',
+        color:'rgba(255,255,255,0.55)',
+        whiteSpace:'nowrap',
       }}>
         {utcTime}
       </div>
