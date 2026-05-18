@@ -380,7 +380,7 @@ export default function CosmosScene({ entered = false }) {
         if (sf <= CRYSTAL_THRESH) playChime(si)
       }
       // Chime for last crystal (si is capped at N-2, so station N-1 never triggers above)
-      if (si === N - 2 && sp >= 0.5 && !lastCrystalChimed.value && sf <= CRYSTAL_THRESH) {
+      if (si === N - 2 && sp >= 0.92 && !lastCrystalChimed.value && sf <= CRYSTAL_THRESH) {
         lastCrystalChimed.value = true
         playChime(N - 1)
       }
