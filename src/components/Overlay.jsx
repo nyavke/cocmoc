@@ -22,14 +22,14 @@ function ScrambleText({ text }) {
     const el = ref.current
     let frame = 0, prevDone = 0, raf
     const run = () => {
-      const p = Math.min(frame / 20, 1)
+      const p = Math.min(frame / 50, 1)
       const done = Math.floor(p * text.length)
       if (done > prevDone) { playTypeClick(); prevDone = done }
       el.textContent = text.split('').map((ch, i) =>
         ch === ' ' ? ' ' : i < done ? ch : CHARS[Math.floor(Math.random() * CHARS.length)]
       ).join('')
       frame++
-      if (frame <= 30) raf = requestAnimationFrame(run)
+      if (frame <= 65) raf = requestAnimationFrame(run)
       else el.textContent = text
     }
     raf = requestAnimationFrame(run)
