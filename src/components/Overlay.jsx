@@ -2,7 +2,6 @@ import { useRef, useEffect, useState } from 'react'
 import { playTypeClick, setSoundEnabled } from '../utils/audio'
 import { useLang } from '../context/LangContext'
 import { T } from '../utils/i18n'
-import LangDropdown from './LangDropdown'
 
 const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ·'
 
@@ -89,7 +88,6 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
           >
             <ScrambleText key={soundHoverKey} text={soundOn ? t.ui.soundOn : t.ui.soundOff} fast />
           </button>
-          <LangDropdown />
         </div>
       </div>
 
