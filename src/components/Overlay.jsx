@@ -10,9 +10,9 @@ const STATIONS = [
   { label: 'THE SINGULARITY',sub: 'Beyond the event horizon · ∞',              tag: '∞' },
 ]
 
-const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ·✦◈◉'
+const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ·'
 
-function ScrambleText({ text }) {
+function ScrambleText({ text, fast = false }) {
   const ref = useRef(null)
   const prev = useRef('')
 
@@ -21,15 +21,17 @@ function ScrambleText({ text }) {
     prev.current = text
     const el = ref.current
     let frame = 0, prevDone = 0, raf
+    const revealAt = fast ? 22 : 100
+    const totalFrames = fast ? 32 : 120
     const run = () => {
-      const p = Math.min(frame / 100, 1)
+      const p = Math.min(frame / revealAt, 1)
       const done = Math.floor(p * text.length)
       if (done > prevDone) { playTypeClick(); prevDone = done }
       el.textContent = text.split('').map((ch, i) =>
         ch === ' ' ? ' ' : i < done ? ch : CHARS[Math.floor(Math.random() * CHARS.length)]
       ).join('')
       frame++
-      if (frame <= 120) raf = requestAnimationFrame(run)
+      if (frame <= totalFrames) raf = requestAnimationFrame(run)
       else el.textContent = text
     }
     raf = requestAnimationFrame(run)
@@ -83,7 +85,7 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
 
         <div style={{ display:'flex', flexDirection:'column', gap:8, paddingLeft:2 }}>
           <span style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.18em', color:'rgba(255,255,255,0.45)' }}>
-            <ScrambleText text="Scroll down to discover." />
+            <ScrambleText text="Scroll down to discover." fast />
           </span>
           <button
             onClick={toggleSound}
@@ -96,7 +98,7 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
               transition: 'color 0.3s ease',
             }}
           >
-            <ScrambleText key={soundHoverKey} text={soundOn ? '♪ Sound: On' : '♪× Sound: Off'} />
+            <ScrambleText key={soundHoverKey} text={soundOn ? '♪ Sound: On' : '♪× Sound: Off'} fast />
           </button>
         </div>
       </div>
