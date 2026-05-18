@@ -7,7 +7,7 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import Overlay from './Overlay'
 import ContactScreen from './ContactScreen'
 import CrystalModal from './CrystalModal'
-import { playChime, playEnter } from '../utils/audio'
+import { playChime, playEnter, startAmbient, stopAmbient, setAmbientMood } from '../utils/audio'
 import { buildCrystal, crystalMat } from '../utils/crystal'
 
 // ── CRYSTAL STATIONS ─────────────────────────────────────────────────────────
@@ -119,6 +119,11 @@ export default function CosmosScene({ entered = false }) {
   const mountRef = useRef(null)
   const enteredRef = useRef(entered)
   useEffect(() => { enteredRef.current = entered }, [entered])
+  useEffect(() => {
+    if (!entered) return
+    startAmbient()
+    return () => stopAmbient()
+  }, [entered])
   const [stationIdx, setStationIdx] = useState(0)
   const [subProgress, setSubProgress] = useState(0)
   const [inBlackHole, setInBlackHole] = useState(false)
@@ -356,6 +361,7 @@ export default function CosmosScene({ entered = false }) {
     let raf
     const clock = new THREE.Clock()
     const tmpV = new THREE.Vector3()
+    const _lastAmbMood = { value: -1 }
     const _camPos = new THREE.Vector3()
     const _lookDir = new THREE.Vector3()
     const _qYaw = new THREE.Quaternion()
@@ -402,6 +408,14 @@ export default function CosmosScene({ entered = false }) {
 
       const inBH = sf > BH_THRESH
       setInBlackHole(inBH)
+
+      // Ambient mood: 0 = space, 1 = deep black hole
+      const ambMood = sf <= CRYSTAL_THRESH ? 0 : sf >= BH_THRESH ? 1
+        : (sf - CRYSTAL_THRESH) / (BH_THRESH - CRYSTAL_THRESH)
+      if (Math.abs(ambMood - _lastAmbMood.value) > 0.02) {
+        _lastAmbMood.value = ambMood
+        setAmbientMood(ambMood)
+      }
 
       // Chime on station change
       if (si !== prevStation.value) {

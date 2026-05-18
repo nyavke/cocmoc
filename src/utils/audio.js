@@ -1,5 +1,14 @@
 let _soundEnabled = false
-export function setSoundEnabled(v) { _soundEnabled = v }
+export function setSoundEnabled(v) {
+  _soundEnabled = v
+  if (_ambGain) {
+    const c = ctx(); if (!c) return
+    const now = c.currentTime
+    _ambGain.gain.cancelScheduledValues(now)
+    _ambGain.gain.setValueAtTime(_ambGain.gain.value, now)
+    _ambGain.gain.linearRampToValueAtTime(v ? AMB_VOL : 0, now + 0.8)
+  }
+}
 export function isSoundEnabled() { return _soundEnabled }
 
 let _ctx = null
@@ -191,4 +200,103 @@ export function playExit() {
   g.gain.exponentialRampToValueAtTime(0.001, now + 0.35)
   o.connect(g); g.connect(c.destination)
   o.start(now); o.stop(now + 0.4)
+}
+
+// ── Ambient music ─────────────────────────────────────────────────────────────
+const AMB_VOL = 0.14
+let _ambGain = null
+let _ambNodes = []
+let _ambSubOscs = []
+
+export function startAmbient() {
+  if (_ambNodes.length > 0) return
+  const c = ctx(); if (!c) return
+  const now = c.currentTime
+
+  _ambGain = c.createGain()
+  _ambGain.gain.setValueAtTime(0, now)
+  if (_soundEnabled) _ambGain.gain.linearRampToValueAtTime(AMB_VOL, now + 8)
+  _ambGain.connect(c.destination)
+
+  // Sub drone — two detuned sines create slow ~0.3 Hz beating
+  ;[55, 55.3].forEach(f => {
+    const o = c.createOscillator()
+    const g = c.createGain()
+    o.type = 'sine'; o.frequency.value = f
+    g.gain.value = 0.55
+    o.connect(g); g.connect(_ambGain)
+    o.start(now)
+    _ambNodes.push(o)
+    _ambSubOscs.push(o)
+  })
+
+  // Mid pad — 110 Hz sine with very slow frequency wobble
+  ;(() => {
+    const o = c.createOscillator()
+    const lfo = c.createOscillator()
+    const lfoG = c.createGain()
+    const g = c.createGain()
+    o.type = 'sine'; o.frequency.value = 110
+    lfo.type = 'sine'; lfo.frequency.value = 0.047
+    lfoG.gain.value = 2.5
+    g.gain.value = 0.30
+    lfo.connect(lfoG); lfoG.connect(o.frequency)
+    o.connect(g); g.connect(_ambGain)
+    o.start(now); lfo.start(now)
+    _ambNodes.push(o, lfo)
+  })()
+
+  // High shimmer — 220 Hz with slow gain breathing
+  ;(() => {
+    const o = c.createOscillator()
+    const lfo = c.createOscillator()
+    const lfoG = c.createGain()
+    const g = c.createGain()
+    o.type = 'sine'; o.frequency.value = 220
+    lfo.type = 'sine'; lfo.frequency.value = 0.063
+    lfoG.gain.value = 0.04
+    g.gain.value = 0.09
+    lfo.connect(lfoG); lfoG.connect(g.gain)
+    o.connect(g); g.connect(_ambGain)
+    o.start(now); lfo.start(now)
+    _ambNodes.push(o, lfo)
+  })()
+
+  // Noise floor — filtered white noise for subtle space texture
+  ;(() => {
+    const bufLen = Math.floor(c.sampleRate * 3.73)
+    const buf = c.createBuffer(1, bufLen, c.sampleRate)
+    const d = buf.getChannelData(0)
+    for (let i = 0; i < bufLen; i++) d[i] = Math.random() * 2 - 1
+    const src = c.createBufferSource()
+    src.buffer = buf; src.loop = true
+    const filt = c.createBiquadFilter()
+    filt.type = 'lowpass'; filt.frequency.value = 90; filt.Q.value = 0.4
+    const g = c.createGain(); g.gain.value = 0.07
+    src.connect(filt); filt.connect(g); g.connect(_ambGain)
+    src.start(now)
+    _ambNodes.push(src)
+  })()
+}
+
+export function stopAmbient() {
+  if (!_ambGain) return
+  const c = ctx(); if (!c) return
+  const now = c.currentTime
+  _ambGain.gain.cancelScheduledValues(now)
+  _ambGain.gain.setValueAtTime(_ambGain.gain.value, now)
+  _ambGain.gain.linearRampToValueAtTime(0, now + 2)
+  const nodes = [..._ambNodes]
+  _ambNodes = []; _ambSubOscs = []; _ambGain = null
+  setTimeout(() => nodes.forEach(n => { try { n.stop() } catch (_) {} }), 2200)
+}
+
+// t=0 → normal space  t=1 → deep inside black hole
+export function setAmbientMood(t) {
+  if (!_ambSubOscs.length) return
+  const c = ctx(); if (!c) return
+  const now = c.currentTime
+  ;[55, 55.3].forEach((base, i) => {
+    _ambSubOscs[i].frequency.setTargetAtTime(base + (36 - base) * t, now, 2.0)
+  })
 }
