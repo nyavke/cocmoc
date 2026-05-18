@@ -7,7 +7,7 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import Overlay from './Overlay'
 import ContactScreen from './ContactScreen'
 import CrystalModal from './CrystalModal'
-import { playChime, playEnter, playBlackHole } from '../utils/audio'
+import { playChime, playEnter } from '../utils/audio'
 import { buildCrystal, crystalMat } from '../utils/crystal'
 
 // ── CRYSTAL STATIONS ─────────────────────────────────────────────────────────
@@ -257,7 +257,7 @@ export default function CosmosScene({ entered = false }) {
     const mouseNDC = { x: 0, y: 0 }
     const raycaster = new THREE.Raycaster()
     const prevStation = { value: -1 }
-    const prevInBH = { value: false }
+    const lastCrystalChimed = { value: false }
 
     const onScroll = () => { if (enteredRef.current) state.scrollY = window.scrollY }
     const onMouse = (e) => {
@@ -376,12 +376,14 @@ export default function CosmosScene({ entered = false }) {
       // Chime on station change
       if (si !== prevStation.value) {
         prevStation.value = si
+        lastCrystalChimed.value = false
         if (sf <= CRYSTAL_THRESH) playChime(si)
       }
-
-      // Black hole entry whoosh — fires when actually crossing the event horizon
-      if (inBH && !prevInBH.value) playBlackHole()
-      prevInBH.value = inBH
+      // Chime for last crystal (si is capped at N-2, so station N-1 never triggers above)
+      if (si === N - 2 && sp >= 0.5 && !lastCrystalChimed.value && sf <= CRYSTAL_THRESH) {
+        lastCrystalChimed.value = true
+        playChime(N - 1)
+      }
 
       // Camera lerp
       state.camZ += (targetZ - state.camZ) * 0.06
