@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useLang } from '../context/LangContext'
 import { T } from '../utils/i18n'
+import LangDropdown from './LangDropdown'
 
 export default function WelcomeScreen({ onEnter }) {
   const { lang } = useLang()
@@ -53,6 +54,8 @@ export default function WelcomeScreen({ onEnter }) {
         }}>
           {t.tagline2}
         </p>
+
+        <LangDropdown style={{ marginTop: 4 }} />
 
         <button
           onClick={handleEnter}

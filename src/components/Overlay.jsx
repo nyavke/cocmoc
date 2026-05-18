@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from 'react'
 import { playTypeClick, setSoundEnabled } from '../utils/audio'
 import { useLang } from '../context/LangContext'
 import { T } from '../utils/i18n'
+import LangDropdown from './LangDropdown'
 
 const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ·'
 
@@ -35,7 +36,7 @@ function ScrambleText({ text, fast = false }) {
 }
 
 export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
-  const { lang, setLang } = useLang()
+  const { lang } = useLang()
   const t = T[lang]
   const s = t.stations[Math.min(stationIdx, t.stations.length - 1)]
   const isBH = stationIdx >= 5
@@ -43,7 +44,6 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
   const sans = "'Space Grotesk', sans-serif"
   const [soundOn, setSoundOn] = useState(true)
   const [soundHoverKey, setSoundHoverKey] = useState(0)
-  const [langKey, setLangKey] = useState(0)
 
   useEffect(() => { setSoundEnabled(true) }, [])
 
@@ -51,11 +51,6 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
     const next = !soundOn
     setSoundOn(next)
     setSoundEnabled(next)
-  }
-
-  const toggleLang = () => {
-    setLang(l => l === 'en' ? 'ru' : 'en')
-    setLangKey(k => k + 1)
   }
 
   const overlayOpacity = inBlackHole ? 0 : 1
@@ -100,20 +95,7 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
           >
             <ScrambleText key={soundHoverKey} text={soundOn ? t.ui.soundOn : t.ui.soundOff} fast />
           </button>
-          <button
-            onClick={toggleLang}
-            style={{
-              fontFamily: mono, fontSize: 9, letterSpacing: '0.18em',
-              color: 'rgba(255,255,255,0.35)',
-              background: 'none', border: 'none', cursor: 'pointer',
-              padding: 0, textAlign: 'left', pointerEvents: 'auto',
-              transition: 'color 0.3s ease',
-            }}
-            onMouseEnter={e => e.currentTarget.style.color = 'rgba(140,80,255,0.7)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}
-          >
-            <ScrambleText key={langKey} text={lang === 'en' ? 'EN · RU' : 'RU · EN'} fast />
-          </button>
+          <LangDropdown />
         </div>
       </div>
 
