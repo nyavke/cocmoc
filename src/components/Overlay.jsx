@@ -68,10 +68,10 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
   useEffect(() => {
     const tick = () => {
       const d = new Date()
-      const h = String(d.getUTCHours()).padStart(2,'0')
+      const h = String((d.getUTCHours() + 3) % 24).padStart(2,'0')
       const m = String(d.getUTCMinutes()).padStart(2,'0')
       const s = String(d.getUTCSeconds()).padStart(2,'0')
-      setUtcTime(`${h}:${m}:${s} UTC`)
+      setUtcTime(`${h}:${m}:${s} UTC+3`)
     }
     tick()
     const id = setInterval(tick, 1000)
