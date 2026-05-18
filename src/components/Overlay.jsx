@@ -44,15 +44,19 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
   const isBH = stationIdx >= 5
   const mono = "'Space Mono', monospace"
   const sans = "'Space Grotesk', sans-serif"
-  const [soundOn, setSoundOn] = useState(false)
+  const [soundOn, setSoundOn] = useState(true)
+
+  // Sync default sound state to audio module on mount
+  useEffect(() => { setSoundEnabled(true) }, [])
+
   const toggleSound = () => {
     const next = !soundOn
     setSoundOn(next)
     setSoundEnabled(next)
   }
 
-  // Fade overlay out when entering black hole
   const overlayOpacity = inBlackHole ? 0 : 1
+  const counter = '0' + (Math.min(stationIdx, 4) + 1) + ' / 05'
 
   return (
     <div style={{
@@ -61,21 +65,21 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
       opacity: overlayOpacity,
       transition: 'opacity 1.5s ease',
     }}>
-      {/* ── Logo top-left */}
-      <div style={{ position:'absolute', top:32, left:40, display:'flex', flexDirection:'column', gap:14 }}>
-      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-        <span style={{
-          fontFamily: mono, fontSize: 11, color: 'rgba(140,80,255,0.8)',
-          textShadow: '0 0 12px rgba(140,80,255,0.6)',
-          display: 'inline-block',
-          animation: 'overlay-spin 12s linear infinite',
-        }}>✦</span>
-        <span style={{ fontFamily:mono, fontSize:10, letterSpacing:'0.4em', color:'rgba(255,255,255,0.3)', fontWeight:700 }}>
-          COCMOC.RU
-        </span>
-      </div>
 
-        {/* ── Scroll hint + sound toggle */}
+      {/* ── Logo + hints top-left */}
+      <div style={{ position:'absolute', top:32, left:40, display:'flex', flexDirection:'column', gap:14 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          <span style={{
+            fontFamily: mono, fontSize: 11, color: 'rgba(140,80,255,0.8)',
+            textShadow: '0 0 12px rgba(140,80,255,0.6)',
+            display: 'inline-block',
+            animation: 'overlay-spin 12s linear infinite',
+          }}>✦</span>
+          <span style={{ fontFamily:mono, fontSize:10, letterSpacing:'0.4em', color:'rgba(255,255,255,0.3)', fontWeight:700 }}>
+            <ScrambleText text="COCMOC.RU" />
+          </span>
+        </div>
+
         <div style={{ display:'flex', flexDirection:'column', gap:8, paddingLeft:2 }}>
           <span style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.18em', color:'rgba(255,255,255,0.28)' }}>
             <ScrambleText text="Scroll down to discover." />
@@ -83,27 +87,33 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
           <button
             onClick={toggleSound}
             style={{
-              fontFamily: mono, fontSize: 9, letterSpacing: '0.18em',
-              color: soundOn ? 'rgba(140,80,255,0.7)' : 'rgba(255,255,255,0.22)',
-              background: 'none', border: 'none', cursor: 'pointer',
-              padding: 0, textAlign: 'left', pointerEvents: 'auto',
-              transition: 'color 0.3s ease',
+              fontFamily: mono, fontSize: 9, letterSpacing: '0.15em',
+              color: soundOn ? 'rgba(140,80,255,0.9)' : 'rgba(255,255,255,0.45)',
+              background: soundOn ? 'rgba(140,80,255,0.12)' : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${soundOn ? 'rgba(140,80,255,0.35)' : 'rgba(255,255,255,0.12)'}`,
+              borderRadius: 3, cursor: 'pointer',
+              padding: '5px 10px', pointerEvents: 'auto',
+              transition: 'all 0.25s ease',
+              display: 'flex', alignItems: 'center', gap: 6,
             }}
+            onMouseEnter={e => e.currentTarget.style.borderColor = soundOn ? 'rgba(140,80,255,0.7)' : 'rgba(255,255,255,0.3)'}
+            onMouseLeave={e => e.currentTarget.style.borderColor = soundOn ? 'rgba(140,80,255,0.35)' : 'rgba(255,255,255,0.12)'}
           >
-            {soundOn ? '♪ Sound: On' : '♪× Sound: Off'}
+            <span>{soundOn ? '♪' : '♪×'}</span>
+            <span>Sound: {soundOn ? 'On' : 'Off'}</span>
           </button>
         </div>
       </div>
 
       {/* ── Tag top-right */}
       <div style={{ position:'absolute', top:36, right:40, fontFamily:mono, fontSize:9, letterSpacing:'0.3em', color:'rgba(140,80,255,0.3)' }}>
-        ✦ {s.tag}
+        ✦ <ScrambleText text={s.tag} />
       </div>
 
       {/* ── Main title bottom-left */}
       <div style={{ position:'absolute', bottom:'18vh', left:40, maxWidth:'72vw' }}>
         <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.4em', color:'rgba(140,80,255,0.35)', marginBottom:14 }}>
-          {'0' + (Math.min(stationIdx, 4) + 1)} / 05
+          <ScrambleText text={counter} />
         </div>
         <h1 style={{
           fontFamily: sans, fontWeight: 300,
@@ -117,7 +127,7 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
           <ScrambleText text={s.label} />
         </h1>
         <p style={{ fontFamily:mono, fontSize:10, letterSpacing:'0.12em', color:'rgba(255,255,255,0.18)', margin:0 }}>
-          {s.sub}
+          <ScrambleText text={s.sub} />
         </p>
       </div>
 
@@ -127,7 +137,7 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
         display:'flex', flexDirection:'column', alignItems:'center', gap:8,
       }}>
         <span style={{ fontFamily:mono, fontSize:8, letterSpacing:'0.3em', color:'rgba(255,255,255,0.08)', writingMode:'vertical-rl', marginBottom:12 }}>
-          SCROLL
+          <ScrambleText text="SCROLL" />
         </span>
         <div style={{ width:1, height:120, background:'rgba(140,80,255,0.1)', position:'relative' }}>
           <div style={{
@@ -157,7 +167,9 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
           opacity: Math.max(0, 1 - subProgress * 4),
         }}>
           <div style={{ width:1, height:36, background:'linear-gradient(to bottom,transparent,rgba(140,80,255,0.45))' }} />
-          <span style={{ fontFamily:mono, fontSize:8, letterSpacing:'0.4em', color:'rgba(255,255,255,0.12)' }}>DESCEND</span>
+          <span style={{ fontFamily:mono, fontSize:8, letterSpacing:'0.4em', color:'rgba(255,255,255,0.12)' }}>
+            <ScrambleText text="DESCEND" />
+          </span>
         </div>
       )}
 
