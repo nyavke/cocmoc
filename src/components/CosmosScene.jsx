@@ -115,8 +115,10 @@ function buildJet(dir=1, count=800) {
 }
 
 // ── COMPONENT ─────────────────────────────────────────────────────────────────
-export default function CosmosScene() {
+export default function CosmosScene({ entered = false }) {
   const mountRef = useRef(null)
+  const enteredRef = useRef(entered)
+  useEffect(() => { enteredRef.current = entered }, [entered])
   const [stationIdx, setStationIdx] = useState(0)
   const [subProgress, setSubProgress] = useState(0)
   const [inBlackHole, setInBlackHole] = useState(false)
@@ -257,7 +259,7 @@ export default function CosmosScene() {
     const prevStation = { value: -1 }
     const prevInBH = { value: false }
 
-    const onScroll = () => { state.scrollY = window.scrollY }
+    const onScroll = () => { if (enteredRef.current) state.scrollY = window.scrollY }
     const onMouse = (e) => {
       state.tX = (e.clientX/window.innerWidth - 0.5) * 2
       state.tY = -(e.clientY/window.innerHeight - 0.5) * 2
@@ -452,9 +454,9 @@ export default function CosmosScene() {
   return (
     <>
       <div ref={mountRef} style={{ position:'fixed', inset:0, zIndex:0 }} />
-      <Overlay stationIdx={stationIdx} subProgress={subProgress} inBlackHole={inBlackHole} />
-      <ContactScreen visible={inBlackHole} />
-      {activeCrystal !== null && (
+      {entered && <Overlay stationIdx={stationIdx} subProgress={subProgress} inBlackHole={inBlackHole} />}
+      {entered && <ContactScreen visible={inBlackHole} />}
+      {entered && activeCrystal !== null && (
         <CrystalModal idx={activeCrystal} onClose={() => setActiveCrystal(null)} />
       )}
     </>
