@@ -51,7 +51,7 @@ export default function LangDropdown({ style = {} }) {
           border: '1px solid rgba(140,80,255,0.2)',
           backdropFilter: 'blur(12px)',
           zIndex: 999,
-          minWidth: '100%',
+          width: '100%',
           overflow: 'hidden',
           animation: 'ddFadeIn 0.15s ease both',
         }}>
