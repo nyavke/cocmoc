@@ -190,93 +190,6 @@ export default function CosmosScene({ entered = false }) {
       scene.add(e); edges.push(e)
     })
 
-    // ── HOVER WAVE PARTICLES ─────────────────────────────────────────────────
-    const WAVE_N = 320
-    const wavePos   = new Float32Array(WAVE_N * 3)
-    const waveSizes = new Float32Array(WAVE_N)
-    const waveTypeA = new Float32Array(WAVE_N)
-    for (let i = 0; i < WAVE_N; i++) {
-      waveSizes[i] = 3 + Math.random() * 5
-      waveTypeA[i] = Math.floor(Math.random() * 4)
-    }
-    const waveGeo = new THREE.BufferGeometry()
-    waveGeo.setAttribute('position', new THREE.BufferAttribute(wavePos, 3))
-    waveGeo.setAttribute('aSize',    new THREE.BufferAttribute(waveSizes, 1))
-    waveGeo.setAttribute('aType',    new THREE.BufferAttribute(waveTypeA, 1))
-    const waveMat = new THREE.ShaderMaterial({
-      uniforms: {
-        uWave:    { value: -99 },
-        uColor:   { value: new THREE.Color(1, 1, 1) },
-        uOpacity: { value: 0 },
-      },
-      vertexShader: `
-        attribute float aSize;
-        attribute float aType;
-        uniform float uWave;
-        varying float vAlpha;
-        varying float vType;
-        void main() {
-          float diff = position.y - uWave;
-          float behind  = smoothstep(0.15, -0.05, diff);
-          float trail   = smoothstep(-3.2, 0.0, diff);
-          float sparkle = exp(-diff * diff * 4.0);
-          vAlpha = behind * trail + sparkle * 0.9;
-          vType  = aType;
-          gl_PointSize = aSize * (0.3 + sparkle * 3.0);
-          gl_Position  = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        uniform vec3 uColor;
-        uniform float uOpacity;
-        varying float vAlpha;
-        varying float vType;
-        void main() {
-          vec2 uv = gl_PointCoord - 0.5;
-          float a = 0.0;
-          if (vType < 1.0) {
-            a = 1.0 - smoothstep(0.28, 0.5, length(uv));
-          } else if (vType < 2.0) {
-            a = 1.0 - smoothstep(0.32, 0.5, abs(uv.x) + abs(uv.y));
-          } else if (vType < 3.0) {
-            float cx = step(abs(uv.x), 0.1);
-            float cy = step(abs(uv.y), 0.1);
-            a = max(cx, cy) * (1.0 - smoothstep(0.38, 0.5, max(abs(uv.x), abs(uv.y))));
-          } else {
-            float b = max(abs(uv.x), abs(uv.y));
-            a = smoothstep(0.5, 0.44, b) - smoothstep(0.37, 0.30, b);
-          }
-          float total = a * vAlpha * uOpacity;
-          if (total < 0.01) discard;
-          gl_FragColor = vec4(uColor * (1.0 + vAlpha * 0.6), total);
-        }
-      `,
-      transparent: true, depthWrite: false,
-      blending: THREE.AdditiveBlending,
-    })
-    const waveMesh = new THREE.Points(waveGeo, waveMat)
-    scene.add(waveMesh)
-
-    const waveState    = { active: false, progress: 0, crystalIdx: -1 }
-    const prevHoverIdx = { value: -1 }
-
-    const triggerWave = (idx) => {
-      const st = STATIONS[idx]
-      const ySpan = st.scaleY * 0.85
-      for (let i = 0; i < WAVE_N; i++) {
-        const theta = Math.random() * Math.PI * 2
-        const r = 0.1 + Math.random() * 1.1
-        wavePos[i*3]   = st.pos[0] + Math.cos(theta) * r
-        wavePos[i*3+1] = st.pos[1] + (Math.random() * 2 - 1) * ySpan
-        wavePos[i*3+2] = st.pos[2] + Math.sin(theta) * r * 0.55
-      }
-      waveGeo.attributes.position.needsUpdate = true
-      waveMat.uniforms.uColor.value.setRGB(...st.colB)
-      waveState.active     = true
-      waveState.progress   = 0
-      waveState.crystalIdx = idx
-    }
-
     // ── BLACK HOLE ───────────────────────────────────────────────────────────
     const bhGroup = new THREE.Group()
     bhGroup.position.set(...BH_POS)
@@ -510,10 +423,6 @@ export default function CosmosScene({ entered = false }) {
         raycaster.setFromCamera(mouseNDC, camera)
         const hHits = raycaster.intersectObjects(crystals)
         const hIdx = hHits.length > 0 ? crystals.indexOf(hHits[0].object) : -1
-        if (hIdx !== prevHoverIdx.value) {
-          if (hIdx !== -1) triggerWave(hIdx)
-          prevHoverIdx.value = hIdx
-        }
         renderer.domElement.style.cursor = hIdx !== -1 ? 'pointer' : 'grab'
       }
 
@@ -524,18 +433,6 @@ export default function CosmosScene({ entered = false }) {
         edges[i].rotation.copy(m.rotation)
       })
       mats.forEach(m => { m.uniforms.time.value = t })
-
-      // Hover wave animation
-      if (waveState.active) {
-        waveState.progress += 1 / (1.6 * 60)
-        if (waveState.progress >= 1) { waveState.progress = 1; waveState.active = false }
-        const st = STATIONS[waveState.crystalIdx]
-        const ySpan = st.scaleY * 0.85
-        waveMat.uniforms.uWave.value    = st.pos[1] - ySpan - 0.4 + (ySpan * 2 + 0.8) * waveState.progress
-        waveMat.uniforms.uOpacity.value = Math.sin(waveState.progress * Math.PI)
-      } else {
-        waveMat.uniforms.uOpacity.value = 0
-      }
 
       // Black hole animation
       singMat.uniforms.time.value = t
