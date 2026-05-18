@@ -55,8 +55,21 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
   const sans = "'Space Grotesk', sans-serif"
   const [soundOn, setSoundOn] = useState(true)
   const [soundHoverKey, setSoundHoverKey] = useState(0)
+  const [utcTime, setUtcTime] = useState('')
 
   useEffect(() => { setSoundEnabled(true) }, [])
+  useEffect(() => {
+    const tick = () => {
+      const d = new Date()
+      const h = String(d.getUTCHours()).padStart(2,'0')
+      const m = String(d.getUTCMinutes()).padStart(2,'0')
+      const s = String(d.getUTCSeconds()).padStart(2,'0')
+      setUtcTime(`${h}:${m}:${s} UTC`)
+    }
+    tick()
+    const id = setInterval(tick, 1000)
+    return () => clearInterval(id)
+  }, [])
 
   const toggleSound = () => {
     const next = !soundOn
@@ -83,6 +96,16 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
       opacity: overlayOpacity,
       transition: 'opacity 1.5s ease',
     }}>
+
+      {/* ── HUD corner brackets */}
+      {[
+        { top:16,    left:16,  borderTop:'1px solid rgba(140,80,255,0.2)', borderLeft:'1px solid rgba(140,80,255,0.2)' },
+        { top:16,    right:16, borderTop:'1px solid rgba(140,80,255,0.2)', borderRight:'1px solid rgba(140,80,255,0.2)' },
+        { bottom:16, left:16,  borderBottom:'1px solid rgba(140,80,255,0.2)', borderLeft:'1px solid rgba(140,80,255,0.2)' },
+        { bottom:16, right:16, borderBottom:'1px solid rgba(140,80,255,0.2)', borderRight:'1px solid rgba(140,80,255,0.2)' },
+      ].map((s, i) => (
+        <div key={i} style={{ position:'absolute', width:20, height:20, ...s }} />
+      ))}
 
       {/* ── Logo + hints top-left */}
       <div style={{ position:'absolute', top:32, left:40, display:'flex', flexDirection:'column', gap:14 }}>
@@ -201,6 +224,15 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
             }} />
           ))}
         </div>
+      </div>
+
+      {/* ── UTC clock bottom-center */}
+      <div style={{
+        position:'absolute', bottom:20, left:'50%', transform:'translateX(-50%)',
+        fontFamily:mono, fontSize:8, letterSpacing:'0.35em',
+        color:'rgba(255,255,255,0.18)',
+      }}>
+        {utcTime}
       </div>
 
       {/* ── Descend hint on first station */}
