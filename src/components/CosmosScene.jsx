@@ -246,22 +246,49 @@ export default function CosmosScene() {
     scene.add(new THREE.AmbientLight(0x080010, 1))
 
     // ── STATE ────────────────────────────────────────────────────────────────
-    const state = { scrollY:0, camZ:20, camX:0, camY:0, mouseX:0, mouseY:0, tX:0, tY:0 }
+    const state = {
+      scrollY:0, camZ:20, camX:0, camY:0, mouseX:0, mouseY:0, tX:0, tY:0,
+      dragYaw:0, dragPitch:0, isDragging:false, hasDragged:false, lastDragX:0, lastDragY:0,
+    }
     const mouseNDC = { x: 0, y: 0 }
     const raycaster = new THREE.Raycaster()
     const prevStation = { value: -1 }
 
     const onScroll = () => { state.scrollY = window.scrollY }
-    const onMouse  = (e) => {
+    const onMouse = (e) => {
       state.tX = (e.clientX/window.innerWidth - 0.5) * 2
       state.tY = -(e.clientY/window.innerHeight - 0.5) * 2
-      mouseNDC.x = (e.clientX / window.innerWidth) * 2 - 1
-      mouseNDC.y = -(e.clientY / window.innerHeight) * 2 + 1
-      raycaster.setFromCamera(mouseNDC, camera)
-      const hits = raycaster.intersectObjects(crystals)
-      renderer.domElement.style.cursor = hits.length > 0 ? 'pointer' : 'default'
+      if (state.isDragging) {
+        const dx = e.clientX - state.lastDragX
+        const dy = e.clientY - state.lastDragY
+        if (Math.abs(dx) > 1 || Math.abs(dy) > 1) state.hasDragged = true
+        state.dragYaw   -= dx * 0.004
+        state.dragPitch -= dy * 0.004
+        state.dragPitch  = Math.max(-Math.PI * 0.48, Math.min(Math.PI * 0.48, state.dragPitch))
+        state.lastDragX  = e.clientX
+        state.lastDragY  = e.clientY
+      } else {
+        mouseNDC.x = (e.clientX / window.innerWidth) * 2 - 1
+        mouseNDC.y = -(e.clientY / window.innerHeight) * 2 + 1
+        raycaster.setFromCamera(mouseNDC, camera)
+        const hits = raycaster.intersectObjects(crystals)
+        renderer.domElement.style.cursor = hits.length > 0 ? 'pointer' : 'grab'
+      }
+    }
+    const onMouseDown = (e) => {
+      if (e.button !== 0) return
+      state.isDragging = true
+      state.hasDragged = false
+      state.lastDragX  = e.clientX
+      state.lastDragY  = e.clientY
+      renderer.domElement.style.cursor = 'grabbing'
+    }
+    const onMouseUp = () => {
+      state.isDragging = false
+      renderer.domElement.style.cursor = 'grab'
     }
     const onClick = (e) => {
+      if (state.hasDragged) return
       mouseNDC.x = (e.clientX / window.innerWidth) * 2 - 1
       mouseNDC.y = -(e.clientY / window.innerHeight) * 2 + 1
       raycaster.setFromCamera(mouseNDC, camera)
@@ -274,8 +301,11 @@ export default function CosmosScene() {
         }
       }
     }
+    renderer.domElement.style.cursor = 'grab'
     window.addEventListener('scroll', onScroll, { passive:true })
     window.addEventListener('mousemove', onMouse)
+    window.addEventListener('mouseup', onMouseUp)
+    renderer.domElement.addEventListener('mousedown', onMouseDown)
     renderer.domElement.addEventListener('click', onClick)
 
     const onResize = () => {
@@ -290,6 +320,12 @@ export default function CosmosScene() {
     let raf
     const clock = new THREE.Clock()
     const tmpV = new THREE.Vector3()
+    const _camPos = new THREE.Vector3()
+    const _lookDir = new THREE.Vector3()
+    const _qYaw = new THREE.Quaternion()
+    const _qPitch = new THREE.Quaternion()
+    const _yawAxis = new THREE.Vector3(0, 1, 0)
+    const _pitchAxis = new THREE.Vector3(1, 0, 0)
 
     const animate = () => {
       raf = requestAnimationFrame(animate)
@@ -355,8 +391,17 @@ export default function CosmosScene() {
       state.camX += (lookX - state.camX) * 0.04
       state.camY += (lookY - state.camY) * 0.04
 
-      camera.position.set(state.camX * 0.25, state.camY * 0.18, state.camZ)
-      tmpV.set(state.camX*0.2 + state.mouseX*0.1, state.camY*0.15 + state.mouseY*0.08, state.camZ - 20)
+      _camPos.set(state.camX * 0.25, state.camY * 0.18, state.camZ)
+      camera.position.copy(_camPos)
+      _lookDir.set(
+        state.camX*0.2 + state.mouseX*0.1 - _camPos.x,
+        state.camY*0.15 + state.mouseY*0.08 - _camPos.y,
+        -20,
+      ).normalize()
+      _qYaw.setFromAxisAngle(_yawAxis, state.dragYaw)
+      _qPitch.setFromAxisAngle(_pitchAxis, state.dragPitch)
+      _lookDir.applyQuaternion(_qYaw).applyQuaternion(_qPitch)
+      tmpV.copy(_camPos).addScaledVector(_lookDir, 20)
       camera.lookAt(tmpV)
 
       // Crystal animation
@@ -382,7 +427,9 @@ export default function CosmosScene() {
       cancelAnimationFrame(raf)
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('mousemove', onMouse)
+      window.removeEventListener('mouseup', onMouseUp)
       window.removeEventListener('resize', onResize)
+      renderer.domElement.removeEventListener('mousedown', onMouseDown)
       renderer.domElement.removeEventListener('click', onClick)
       mount.removeChild(renderer.domElement)
       renderer.dispose()
