@@ -21,10 +21,8 @@ function ctx() {
   return _ctx
 }
 
-// Browsers block AudioContext until a user gesture. Pre-unlock on the earliest
-// possible signals so sounds work from the first scroll/scramble.
 function _unlock() {
-  ctx() // creates + resumes context
+  ctx()
   ;['mousemove','pointerdown','keydown','scroll','touchstart'].forEach(
     e => document.removeEventListener(e, _unlock)
   )
@@ -33,10 +31,8 @@ function _unlock() {
   e => document.addEventListener(e, _unlock, { once: false, passive: true })
 )
 
-// Base frequencies per crystal station
 const FREQS = [432, 528, 639, 741, 852]
 
-// Crystal scroll chime — called when station changes
 export function playChime(stationIdx) {
   if (!_soundEnabled) return
   const c = ctx(); if (!c) return
@@ -48,7 +44,6 @@ export function playChime(stationIdx) {
   master.gain.exponentialRampToValueAtTime(0.001, now + 1.4)
   master.connect(c.destination)
 
-  // Two harmonic sines — fundamental + natural overtone
   ;[[f, 0], [f * 2.76, 0.01]].forEach(([freq, delay]) => {
     const o = c.createOscillator()
     o.type = 'sine'
@@ -58,7 +53,6 @@ export function playChime(stationIdx) {
     o.stop(now + 1.4)
   })
 
-  // Click transient (high-freq sine, very short)
   const click = c.createOscillator()
   const cg = c.createGain()
   click.type = 'sine'
@@ -69,14 +63,12 @@ export function playChime(stationIdx) {
   click.start(now); click.stop(now + 0.06)
 }
 
-// Crystal enter sound — whoosh + crystalline harmonics
 export function playEnter(stationIdx) {
   if (!_soundEnabled) return
   const c = ctx(); if (!c) return
   const f = FREQS[stationIdx] || 528
   const now = c.currentTime
 
-  // Whoosh (noise → bandpass)
   const buf = c.createBuffer(1, c.sampleRate, c.sampleRate)
   const data = buf.getChannelData(0)
   for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1
@@ -94,7 +86,6 @@ export function playEnter(stationIdx) {
   noise.connect(filt); filt.connect(ng); ng.connect(c.destination)
   noise.start(now)
 
-  // Crystal harmonics — staggered arrival
   ;[f * 0.5, f, f * 2, f * 3.14, f * 5].forEach((freq, i) => {
     const o = c.createOscillator()
     const g = c.createGain()
@@ -110,13 +101,12 @@ export function playEnter(stationIdx) {
   })
 }
 
-// Typewriter click — short noise burst, globally throttled so overlapping scramblers don't stack
 let _lastClick = 0
 export function playTypeClick() {
   if (!_soundEnabled) return
   const c = ctx(); if (!c) return
   const now = c.currentTime
-  if (now - _lastClick < 0.028) return   // ~35 clicks/sec max
+  if (now - _lastClick < 0.028) return
   _lastClick = now
   const len = Math.floor(c.sampleRate * 0.011)
   const buf = c.createBuffer(1, len, c.sampleRate)
@@ -134,13 +124,11 @@ export function playTypeClick() {
   src.start(now)
 }
 
-// Black hole entry — dramatic whoosh + bass drop + pitch sweep
 export function playBlackHole() {
   if (!_soundEnabled) return
   const c = ctx(); if (!c) return
   const now = c.currentTime
 
-  // Whoosh: noise through bandpass sweeping 3kHz → 40Hz
   const buf = c.createBuffer(1, c.sampleRate * 3, c.sampleRate)
   const d = buf.getChannelData(0)
   for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1
@@ -157,7 +145,6 @@ export function playBlackHole() {
   noise.connect(filt); filt.connect(ng); ng.connect(c.destination)
   noise.start(now)
 
-  // Deep bass dive
   const bass = c.createOscillator()
   const bg = c.createGain()
   bass.type = 'sine'
@@ -169,7 +156,6 @@ export function playBlackHole() {
   bass.connect(bg); bg.connect(c.destination)
   bass.start(now); bass.stop(now + 3.5)
 
-  // Harmonic pitch drops — 3 sines plunging into the singularity
   ;[520, 1040, 2080].forEach((f0, i) => {
     const o = c.createOscillator()
     const g = c.createGain()
@@ -184,7 +170,6 @@ export function playBlackHole() {
   })
 }
 
-// Crystal exit sound — descending tone
 export function playExit() {
   if (!_soundEnabled) return
   const c = ctx(); if (!c) return
@@ -200,7 +185,6 @@ export function playExit() {
   o.start(now); o.stop(now + 0.4)
 }
 
-// ── Ambient music ─────────────────────────────────────────────────────────────
 let _ambAudio = null
 let _ambFadeTimer = null
 
@@ -238,7 +222,6 @@ export function stopAmbient() {
   })
 }
 
-// t=0 → normal  t=1 → black hole (music slows slightly)
 export function setAmbientMood(t) {
   if (!_ambAudio) return
   _ambAudio.playbackRate = Math.max(0.75, 1.0 - t * 0.18)

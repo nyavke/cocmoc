@@ -103,8 +103,6 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
       opacity: overlayOpacity,
       transition: 'opacity 1.5s ease',
     }}>
-
-      {/* ── HUD corner brackets */}
       {[
         { top:16,    left:16,  borderTop:'1px solid rgba(140,80,255,0.2)', borderLeft:'1px solid rgba(140,80,255,0.2)' },
         { top:16,    right:16, borderTop:'1px solid rgba(140,80,255,0.2)', borderRight:'1px solid rgba(140,80,255,0.2)' },
@@ -113,8 +111,6 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
       ].map((s, i) => (
         <div key={i} style={{ position:'absolute', width:20, height:20, ...s }} />
       ))}
-
-      {/* ── Logo + hints top-left */}
       <div style={{ position:'absolute', top:32, left: isMobile ? 16 : 40, display:'flex', flexDirection:'column', gap: isMobile ? 10 : 14 }}>
         <div style={{ display:'flex', alignItems:'center' }}>
           <span style={{ fontFamily:mono, fontSize:10, letterSpacing:'0.4em', color:'rgba(255,255,255,0.55)', fontWeight:700 }}>
@@ -143,13 +139,9 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
           </button>
         </div>
       </div>
-
-      {/* ── Tag top-right */}
       <div style={{ position:'absolute', top:36, right: isMobile ? 16 : 40, fontFamily:mono, fontSize:9, letterSpacing:'0.3em', color:'rgba(140,80,255,0.55)' }}>
         ✦ <ScrambleText text={s.tag} />
       </div>
-
-      {/* ── Main title bottom-left */}
       <div style={{ position:'absolute', bottom: isMobile ? '12vh' : '8vh', left: isMobile ? 16 : 40, maxWidth: isMobile ? '88vw' : '72vw' }}>
         <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.4em', color:'rgba(140,80,255,0.6)', marginBottom:14 }}>
           <ScrambleText text={counter} />
@@ -169,8 +161,6 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
           <ScrambleText text={s.sub} />
         </p>
       </div>
-
-      {/* ── Right progress bar (desktop only) */}
       {!isMobile && (
         <div style={{
           position:'absolute', right:40, top:'50%', transform:'translateY(-50%)',
@@ -199,8 +189,6 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
           ))}
         </div>
       )}
-
-      {/* ── Bottom-center station dots (mobile only) */}
       {isMobile && (
         <div style={{
           position:'absolute', bottom: 24, left:'50%', transform:'translateX(-50%)',
@@ -218,8 +206,6 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
           ))}
         </div>
       )}
-
-      {/* ── Telemetry bottom-right (desktop only) */}
       {!isMobile && <div style={{
         position: 'absolute', bottom: '3vh', right: 40,
         display: 'flex', flexDirection: 'column', gap: 10,
@@ -255,8 +241,6 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
           ))}
         </div>
       </div>}
-
-      {/* ── UTC clock top-center */}
       <div style={{
         position:'absolute', top:36, left:'50%', transform:'translateX(-50%)',
         fontFamily:mono, fontSize:9, letterSpacing:'0.35em',
@@ -265,8 +249,6 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
       }}>
         {utcTime}
       </div>
-
-      {/* ── Descend hint on first station */}
       {stationIdx === 0 && (
         <div style={{
           position:'absolute', bottom:28, left:'50%', transform:'translateX(-50%)',

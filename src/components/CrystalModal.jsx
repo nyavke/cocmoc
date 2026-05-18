@@ -131,20 +131,17 @@ export default function CrystalModal({ idx, onClose }) {
   const mono = "'Space Mono', monospace"
   const sans = "'Space Grotesk', sans-serif"
 
-  // Colours
   const accentR = Math.round(data.colB[0] * 255)
   const accentG = Math.round(data.colB[1] * 255)
   const accentB = Math.round(data.colB[2] * 255)
   const accent = `rgb(${accentR},${accentG},${accentB})`
   const bg = `rgba(${Math.round(data.colA[0]*12)},${Math.round(data.colA[1]*6)},${Math.round(data.colA[2]*22)},0.97)`
 
-  // Entrance
   useEffect(() => {
     const t = setTimeout(() => setPhase('visible'), 40)
     return () => clearTimeout(t)
   }, [])
 
-  // Body scramble — shared state keeps both x-ray layers in sync
   useEffect(() => {
     const timers = [], rafs = []
     data.body.forEach((line, li) => {
@@ -170,7 +167,6 @@ export default function CrystalModal({ idx, onClose }) {
     return () => { timers.forEach(clearTimeout); rafs.forEach(cancelAnimationFrame) }
   }, [lang])
 
-  // Close handler
   const close = useCallback(() => {
     setPhase('exiting')
     playExit()
@@ -183,7 +179,6 @@ export default function CrystalModal({ idx, onClose }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [close])
 
-  // X-ray mouse tracking — direct DOM, no re-render
   const handleMouseMove = useCallback((e) => {
     if (!spotRef.current) return
     const rect = spotRef.current.getBoundingClientRect()
@@ -216,7 +211,6 @@ export default function CrystalModal({ idx, onClose }) {
         cursor: 'default',
       }}
     >
-      {/* ── 3D CRYSTAL PREVIEW (desktop only) */}
       {!isMobile && (
         <div style={{
           position: 'absolute',
@@ -238,15 +232,11 @@ export default function CrystalModal({ idx, onClose }) {
           />
         </div>
       )}
-
-      {/* Flash on entry */}
       <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
         background: 'white', zIndex: 1,
         animation: 'crystalFlash 0.45s ease-out forwards',
       }} />
-
-      {/* ── TOP ROW ─────────────────────────────────────────────────────── */}
       <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         marginBottom: 'clamp(40px,7vh,80px)',
@@ -275,8 +265,6 @@ export default function CrystalModal({ idx, onClose }) {
           ✕ ESC
         </button>
       </div>
-
-      {/* ── TITLE ────────────────────────────────────────────────────────── */}
       <h2 style={{
         fontFamily: sans, fontWeight: 300,
         fontSize: 'clamp(28px,5vw,72px)',
@@ -288,8 +276,6 @@ export default function CrystalModal({ idx, onClose }) {
       }}>
         <ScrambleText text={data.title} delay={180} />
       </h2>
-
-      {/* ── DIVIDER ──────────────────────────────────────────────────────── */}
       <div style={{
         height: 1, marginBottom: 'clamp(24px,4vh,48px)',
         background: `linear-gradient(to right, ${accent}44, transparent)`,
@@ -297,10 +283,7 @@ export default function CrystalModal({ idx, onClose }) {
         animation: 'growLine 0.6s 0.3s ease both',
         transformOrigin: 'left',
       }} />
-
-      {/* ── X-RAY TEXT BODY ──────────────────────────────────────────────── */}
       <div style={{ position: 'relative', zIndex: 2, flex: 1 }}>
-        {/* Base layer — dim gray */}
         <div style={{
           fontFamily: sans, fontWeight: 300,
           fontSize: 'clamp(18px,2.5vw,32px)',
@@ -313,8 +296,6 @@ export default function CrystalModal({ idx, onClose }) {
               : <div key={i}>{line || ' '}</div>
           )}
         </div>
-
-        {/* Spotlight layer — bright, masked by mouse */}
         <div
           ref={spotRef}
           style={{
@@ -335,8 +316,6 @@ export default function CrystalModal({ idx, onClose }) {
           )}
         </div>
       </div>
-
-      {/* ── DIVIDER 2 ────────────────────────────────────────────────────── */}
       {data.stats.length > 0 && (
         <>
           <div style={{
@@ -345,8 +324,6 @@ export default function CrystalModal({ idx, onClose }) {
             position: 'relative', zIndex: 2,
             animation: 'fadeUp 0.5s 0.7s ease both',
           }} />
-
-          {/* ── STATS ───────────────────────────────────────────────────── */}
           <div style={{
             display: 'flex', gap: 'clamp(24px,5vw,80px)',
             position: 'relative', zIndex: 2,
@@ -367,8 +344,6 @@ export default function CrystalModal({ idx, onClose }) {
           </div>
         </>
       )}
-
-      {/* ── BOTTOM HINT ──────────────────────────────────────────────────── */}
       <div style={{
         position: 'absolute', bottom: 'clamp(24px,4vh,40px)', right: 'clamp(24px,4vw,60px)',
         fontFamily: mono, fontSize: 9, letterSpacing: '0.25em',

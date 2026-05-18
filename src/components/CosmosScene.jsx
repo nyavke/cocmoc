@@ -10,7 +10,6 @@ import CrystalModal from './CrystalModal'
 import { playChime, playEnter, startAmbient, stopAmbient, setAmbientMood } from '../utils/audio'
 import { buildCrystal, crystalMat } from '../utils/crystal'
 
-// ── CRYSTAL STATIONS ─────────────────────────────────────────────────────────
 const STATIONS = [
   {
     label: 'COCMOC.RU',
@@ -55,10 +54,9 @@ const STATIONS = [
 ]
 
 const BH_POS = [0, 0, -162]
-const CRYSTAL_THRESH = 0.78  // 0-78% = crystal journey
-const BH_THRESH = 0.92       // 78-92% = black hole approach, 92%+ = contact
+const CRYSTAL_THRESH = 0.78
+const BH_THRESH = 0.92
 
-// ── POST-PROCESSING SHADERS ───────────────────────────────────────────────────
 const ChromaShader = {
   uniforms: { tDiffuse: { value: null }, amount: { value: 0.003 } },
   vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
@@ -73,10 +71,6 @@ const ChromaShader = {
     }`,
 }
 
-// ── HELPERS ───────────────────────────────────────────────────────────────────
-// buildCrystal and crystalMat imported from ../utils/crystal
-
-// ── ACCRETION DISK GEOMETRY ───────────────────────────────────────────────────
 function buildAccretionDisk(innerR=2.0, outerR=7.0, segs=256, rings=32) {
   const pos=[], uvs=[], idx=[]
   for (let r=0; r<=rings; r++) {
@@ -99,7 +93,6 @@ function buildAccretionDisk(innerR=2.0, outerR=7.0, segs=256, rings=32) {
   return geo
 }
 
-// ── JET GEOMETRY ─────────────────────────────────────────────────────────────
 function buildJet(dir=1, count=800) {
   const pos=new Float32Array(count*3), spd=new Float32Array(count), ph=new Float32Array(count)
   for (let i=0; i<count; i++) {
@@ -114,7 +107,6 @@ function buildJet(dir=1, count=800) {
   return geo
 }
 
-// ── COMPONENT ─────────────────────────────────────────────────────────────────
 export default function CosmosScene({ entered = false }) {
   const mountRef = useRef(null)
   const enteredRef = useRef(entered)
@@ -151,7 +143,6 @@ export default function CosmosScene({ entered = false }) {
     const chroma = new ShaderPass(ChromaShader)
     composer.addPass(chroma)
 
-    // ── STARS ────────────────────────────────────────────────────────────────
     const sGeo = new THREE.BufferGeometry()
     const sPos=new Float32Array(5000*3), sCol=new Float32Array(5000*3)
     const pal=[[0.85,0.82,1],[0.6,0.5,1],[0.95,0.85,0.55],[0.5,0.7,1],[1,0.75,0.9]]
@@ -168,7 +159,6 @@ export default function CosmosScene({ entered = false }) {
       blending:THREE.AdditiveBlending, depthWrite:false, sizeAttenuation:true,
     })))
 
-    // ── NEBULA DUST ──────────────────────────────────────────────────────────
     const dGeo=new THREE.BufferGeometry()
     const dPos=new Float32Array(4000*3)
     for (let i=0; i<4000; i++) {
@@ -180,7 +170,6 @@ export default function CosmosScene({ entered = false }) {
       blending:THREE.AdditiveBlending, depthWrite:false, sizeAttenuation:true,
     })))
 
-    // ── CRYSTALS ─────────────────────────────────────────────────────────────
     const mats=[], crystals=[], edges=[]
     STATIONS.forEach(({ pos, colA, colB, colC, scaleY, seed }) => {
       const geo=buildCrystal(scaleY, seed)
@@ -195,12 +184,10 @@ export default function CosmosScene({ entered = false }) {
       scene.add(e); edges.push(e)
     })
 
-    // ── BLACK HOLE ───────────────────────────────────────────────────────────
     const bhGroup = new THREE.Group()
     bhGroup.position.set(...BH_POS)
     scene.add(bhGroup)
 
-    // Singularity: pure black sphere with thin bright white rim
     const singMat = new THREE.ShaderMaterial({
       uniforms: { time: { value: 0 } },
       vertexShader: `
@@ -217,18 +204,15 @@ export default function CosmosScene({ entered = false }) {
           vec3 N=normalize(vN); vec3 V=normalize(vV);
           float NV=max(dot(N,V),0.0);
           float rim=1.0-NV;
-          // Thin ring: peak brightness at the very edge, falls off fast inward
           float edge=pow(rim,5.5);
-          // Subtle pulsing white-blue outline
           float pulse=0.92+0.08*sin(time*0.6);
-          vec3 col=vec3(0.0); // pure black core
-          col+=edge*vec3(2.8,2.9,3.5)*pulse; // bright white-blue rim → blooms
+          vec3 col=vec3(0.0);
+          col+=edge*vec3(2.8,2.9,3.5)*pulse;
           gl_FragColor=vec4(col,1.0);
         }`,
     })
     bhGroup.add(new THREE.Mesh(new THREE.SphereGeometry(2.2, 64, 64), singMat))
 
-    // Photon ring — single bright thin torus at event horizon
     const photonRing = new THREE.Mesh(
       new THREE.TorusGeometry(2.28, 0.055, 16, 320),
       new THREE.MeshBasicMaterial({
@@ -239,7 +223,6 @@ export default function CosmosScene({ entered = false }) {
     photonRing.rotation.x = Math.PI * 0.5
     bhGroup.add(photonRing)
 
-    // Soft outer halo (backside sphere, additive, very dim)
     bhGroup.add(new THREE.Mesh(
       new THREE.SphereGeometry(2.5, 32, 32),
       new THREE.MeshBasicMaterial({
@@ -249,14 +232,12 @@ export default function CosmosScene({ entered = false }) {
       })
     ))
 
-    // ── SCENE LIGHTS ────────────────────────────────────────────────────────
     scene.add(new THREE.AmbientLight(0x080010, 1))
 
-    // ── STATE ────────────────────────────────────────────────────────────────
     const state = {
       scrollY:0, camZ:20, camX:0, camY:0, mouseX:0, mouseY:0, tX:0, tY:0,
-      dragYaw:0, dragPitch:0,         // smoothed current
-      dragYawT:0, dragPitchT:0,       // targets (reset to 0 on release)
+      dragYaw:0, dragPitch:0,
+      dragYawT:0, dragPitchT:0,
       isDragging:false, hasDragged:false, lastDragX:0, lastDragY:0,
     }
     const mouseNDC = { x: 0, y: 0 }
@@ -291,7 +272,7 @@ export default function CosmosScene({ entered = false }) {
     }
     const onMouseUp = () => {
       state.isDragging = false
-      state.dragYawT   = 0  // spring back to center
+      state.dragYawT   = 0
       state.dragPitchT = 0
       renderer.domElement.style.cursor = 'grab'
     }
@@ -309,7 +290,6 @@ export default function CosmosScene({ entered = false }) {
         }
       }
     }
-    // ── TOUCH NAVIGATION ────────────────────────────────────────────────────
     let _touchLastY = 0, _touchVelocity = 0, _momentumRAF = null
 
     const _sensitivity = () =>
@@ -373,21 +353,19 @@ export default function CosmosScene({ entered = false }) {
       raf = requestAnimationFrame(animate)
       const t = clock.getElapsedTime()
 
-      // Scroll fraction
       const scrollMax = document.documentElement.scrollHeight - window.innerHeight
       const sf = Math.min(state.scrollY / Math.max(scrollMax,1), 1)
 
-      // Mouse smooth
       state.mouseX += (state.tX - state.mouseX) * 0.05
       state.mouseY += (state.tY - state.mouseY) * 0.05
 
       let targetZ = 6
       let si = 0, sp = 0
-      const N = STATIONS.length // 5
+      const N = STATIONS.length
 
       if (sf <= CRYSTAL_THRESH) {
-        const cf = sf / CRYSTAL_THRESH                        // 0→1
-        const stF = cf * (N - 1)                             // 0→4
+        const cf = sf / CRYSTAL_THRESH
+        const stF = cf * (N - 1)
         si = Math.min(Math.floor(stF), N - 2)
         sp = stF - si
         const ease = sp*sp*(3-2*sp)
@@ -398,7 +376,7 @@ export default function CosmosScene({ entered = false }) {
         const bhF = (sf - CRYSTAL_THRESH) / (BH_THRESH - CRYSTAL_THRESH)
         targetZ = THREE.MathUtils.lerp(-122, -156, bhF*bhF)
         si = N - 1; sp = bhF
-        setStationIdx(5) // black hole station
+        setStationIdx(5)
         setSubProgress(bhF)
       } else {
         targetZ = -156
@@ -409,7 +387,6 @@ export default function CosmosScene({ entered = false }) {
       const inBH = sf > BH_THRESH
       setInBlackHole(inBH)
 
-      // Ambient mood: 0 = space, 1 = deep black hole
       const ambMood = sf <= CRYSTAL_THRESH ? 0 : sf >= BH_THRESH ? 1
         : (sf - CRYSTAL_THRESH) / (BH_THRESH - CRYSTAL_THRESH)
       if (Math.abs(ambMood - _lastAmbMood.value) > 0.02) {
@@ -417,22 +394,18 @@ export default function CosmosScene({ entered = false }) {
         setAmbientMood(ambMood)
       }
 
-      // Chime on station change
       if (si !== prevStation.value) {
         prevStation.value = si
         lastCrystalChimed.value = false
         if (sf <= CRYSTAL_THRESH) playChime(si)
       }
-      // Chime for last crystal (si is capped at N-2, so station N-1 never triggers above)
       if (si === N - 2 && sp >= 0.92 && !lastCrystalChimed.value && sf <= CRYSTAL_THRESH) {
         lastCrystalChimed.value = true
         playChime(N - 1)
       }
 
-      // Camera lerp
       state.camZ += (targetZ - state.camZ) * 0.06
 
-      // Look target — interpolate between current and next station so last crystal aligns correctly
       let lookX, lookY, lookZ
       if (si < N) {
         const ease = sp*sp*(3-2*sp)
@@ -447,7 +420,6 @@ export default function CosmosScene({ entered = false }) {
       state.camX += (lookX - state.camX) * 0.04
       state.camY += (lookY - state.camY) * 0.04
 
-      // Smooth drag: follow target while dragging, spring back to 0 on release
       const dragLerp = state.isDragging ? 0.12 : 0.06
       state.dragYaw   += (state.dragYawT   - state.dragYaw)   * dragLerp
       state.dragPitch += (state.dragPitchT - state.dragPitch) * dragLerp
@@ -465,7 +437,6 @@ export default function CosmosScene({ entered = false }) {
       tmpV.copy(_camPos).addScaledVector(_lookDir, 20)
       camera.lookAt(tmpV)
 
-      // Hover detection — per-frame so camera matrix is always fresh
       if (!state.isDragging) {
         raycaster.setFromCamera(mouseNDC, camera)
         const hHits = raycaster.intersectObjects(crystals)
@@ -473,7 +444,6 @@ export default function CosmosScene({ entered = false }) {
         renderer.domElement.style.cursor = hIdx !== -1 ? 'pointer' : 'grab'
       }
 
-      // Crystal animation
       crystals.forEach((m, i) => {
         m.rotation.y = t * 0.05 + i * 1.1
         m.rotation.x = 0.15 + Math.sin(t*0.03+i)*0.04
@@ -481,11 +451,9 @@ export default function CosmosScene({ entered = false }) {
       })
       mats.forEach(m => { m.uniforms.time.value = t })
 
-      // Black hole animation
       singMat.uniforms.time.value = t
       photonRing.rotation.z = t * 0.08
 
-      // Chromatic aberration: very slight pulse
       chroma.uniforms.amount.value = 0.003 + Math.sin(t * 0.4) * 0.0008
 
       composer.render()

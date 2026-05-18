@@ -96,7 +96,6 @@ function LinkItem({ display, href, glow, label }) {
         }}
       >
         {display}
-        {/* Underline that glows */}
         <span style={{
           position: 'absolute',
           bottom: 0, left: 0,
@@ -130,8 +129,6 @@ export default function ContactScreen({ visible }) {
       pointerEvents: visible ? 'auto' : 'none',
       transition: 'opacity 2s cubic-bezier(0.16, 1, 0.3, 1)',
     }}>
-
-      {/* Stars */}
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
         {STARS.map((s, i) => (
           <div key={i} style={{
@@ -147,15 +144,11 @@ export default function ContactScreen({ visible }) {
           }} />
         ))}
       </div>
-
-      {/* Thin top line */}
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0,
         height: 1,
         background: 'linear-gradient(to right, transparent, rgba(140,80,255,0.15), transparent)',
       }} />
-
-      {/* Top nav */}
       <div style={{
         position: 'absolute', top: 32, left: 40,
         display: 'flex', alignItems: 'center', gap: 10,
@@ -166,23 +159,17 @@ export default function ContactScreen({ visible }) {
           color: 'rgba(140,80,255,0.25)', fontWeight: 700,
         }}>✦ COCMOC.RU</span>
       </div>
-
-      {/* Station hint */}
       <div style={{
         position: 'absolute', top: 36, right: 40,
         fontFamily: mono, fontSize: 9, letterSpacing: '0.3em',
         color: 'rgba(255,255,255,0.05)',
         pointerEvents: 'none',
       }}>{t.singularity}</div>
-
-      {/* Main content */}
       <div style={{
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', gap: 0,
         position: 'relative', zIndex: 1,
       }}>
-
-        {/* NYAVKE — large glow letters */}
         <div style={{
           fontFamily: sans, fontWeight: 300,
           fontSize: 'clamp(64px, 12vw, 180px)',
@@ -193,16 +180,12 @@ export default function ContactScreen({ visible }) {
         }}>
           {NAME.split('').map((ch, i) => <GlowLetter key={i} ch={ch} />)}
         </div>
-
-        {/* Horizontal divider */}
         <div style={{
           width: 'clamp(200px, 40vw, 600px)',
           height: 1,
           background: 'linear-gradient(to right, transparent, rgba(140,80,255,0.25), transparent)',
           marginBottom: '7vh',
         }} />
-
-        {/* Contact links */}
         <div style={{
           display: 'flex',
           gap: 'clamp(32px, 6vw, 96px)',
@@ -214,8 +197,6 @@ export default function ContactScreen({ visible }) {
         </div>
 
       </div>
-
-      {/* Bottom */}
       <div style={{
         position: 'absolute', bottom: 32,
         display: 'flex', flexDirection: 'column',

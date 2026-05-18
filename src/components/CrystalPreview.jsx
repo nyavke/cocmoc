@@ -23,7 +23,6 @@ export default function CrystalPreview({ scaleY, seed, colA, colB, colC }) {
     const camera = new THREE.PerspectiveCamera(52, w / h, 0.1, 100)
     camera.position.set(0, 0, 10)
 
-    // baseBoost = 0.35 eliminates dark faces in preview (no bloom here)
     const geo = buildCrystal(scaleY, seed)
     const mat = crystalMat(colA, colB, colC, 0.35)
     const mesh = new THREE.Mesh(geo, mat)
