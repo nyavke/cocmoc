@@ -9,7 +9,6 @@ import ContactScreen from './ContactScreen'
 import CrystalModal from './CrystalModal'
 import { playChime, playEnter } from '../utils/audio'
 import { buildCrystal, crystalMat } from '../utils/crystal'
-import { addPlanets, animatePlanets } from '../utils/planets'
 
 // ── CRYSTAL STATIONS ─────────────────────────────────────────────────────────
 const STATIONS = [
@@ -191,9 +190,6 @@ export default function CosmosScene() {
       pl.position.set(...pos); scene.add(pl)
     })
 
-    // ── PLANETS ──────────────────────────────────────────────────────────────
-    const planetObjects = addPlanets(scene)
-
     // ── BLACK HOLE ───────────────────────────────────────────────────────────
     const bhGroup = new THREE.Group()
     bhGroup.position.set(...BH_POS)
@@ -370,9 +366,6 @@ export default function CosmosScene() {
         edges[i].rotation.copy(m.rotation)
       })
       mats.forEach(m => { m.uniforms.time.value = t })
-
-      // Planet animation
-      animatePlanets(planetObjects, t)
 
       // Black hole animation
       singMat.uniforms.time.value = t
