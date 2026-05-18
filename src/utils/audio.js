@@ -14,6 +14,18 @@ function ctx() {
   return _ctx
 }
 
+// Browsers block AudioContext until a user gesture. Pre-unlock on the earliest
+// possible signals so sounds work from the first scroll/scramble.
+function _unlock() {
+  ctx() // creates + resumes context
+  ;['mousemove','pointerdown','keydown','scroll','touchstart'].forEach(
+    e => document.removeEventListener(e, _unlock)
+  )
+}
+;['mousemove','pointerdown','keydown','scroll','touchstart'].forEach(
+  e => document.addEventListener(e, _unlock, { once: false, passive: true })
+)
+
 // Base frequencies per crystal station
 const FREQS = [432, 528, 639, 741, 852]
 
