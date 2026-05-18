@@ -168,12 +168,12 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
 
       {/* ── Telemetry bottom-right */}
       <div style={{
-        position: 'absolute', bottom: '8vh', right: 72,
+        position: 'absolute', bottom: '3vh', right: 40,
         display: 'flex', flexDirection: 'column', gap: 10,
         alignItems: 'flex-end',
       }}>
         <span style={{ fontFamily: mono, fontSize: 8, letterSpacing: '0.35em', color: 'rgba(140,80,255,0.35)' }}>
-          ◈ TELEMETRY
+          <ScrambleText key={stationIdx + '-hdr'} text="◈ TELEMETRY" fast />
         </span>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {[
@@ -184,10 +184,10 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
           ].map(([label, value]) => (
             <div key={label} style={{ display: 'flex', gap: 14, alignItems: 'baseline' }}>
               <span style={{ fontFamily: mono, fontSize: 7, letterSpacing: '0.22em', color: 'rgba(255,255,255,0.13)' }}>
-                {label}
+                <ScrambleText key={stationIdx + label} text={label} fast />
               </span>
               <span style={{ fontFamily: mono, fontSize: 8, letterSpacing: '0.08em', color: 'rgba(140,80,255,0.6)', minWidth: 80, textAlign: 'right' }}>
-                {value}
+                <ScrambleText key={stationIdx + label + 'v'} text={value} fast />
               </span>
             </div>
           ))}
