@@ -135,7 +135,7 @@ export default function CosmosScene() {
 
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(58, window.innerWidth/window.innerHeight, 0.1, 800)
-    camera.position.set(0, 0, 6)
+    camera.position.set(0, 0, 20)
 
     const composer = new EffectComposer(renderer)
     composer.addPass(new RenderPass(scene, camera))
@@ -246,7 +246,7 @@ export default function CosmosScene() {
     scene.add(new THREE.AmbientLight(0x080010, 1))
 
     // ── STATE ────────────────────────────────────────────────────────────────
-    const state = { scrollY:0, camZ:6, camX:0, camY:0, mouseX:0, mouseY:0, tX:0, tY:0 }
+    const state = { scrollY:0, camZ:20, camX:0, camY:0, mouseX:0, mouseY:0, tX:0, tY:0 }
     const mouseNDC = { x: 0, y: 0 }
     const raycaster = new THREE.Raycaster()
     const prevStation = { value: -1 }

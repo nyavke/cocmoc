@@ -1,3 +1,7 @@
+let _soundEnabled = false
+export function setSoundEnabled(v) { _soundEnabled = v }
+export function isSoundEnabled() { return _soundEnabled }
+
 let _ctx = null
 
 function ctx() {
@@ -15,6 +19,7 @@ const FREQS = [432, 528, 639, 741, 852]
 
 // Crystal scroll chime — called when station changes
 export function playChime(stationIdx) {
+  if (!_soundEnabled) return
   const c = ctx(); if (!c) return
   const f = FREQS[stationIdx] || 528
   const now = c.currentTime
@@ -47,6 +52,7 @@ export function playChime(stationIdx) {
 
 // Crystal enter sound — whoosh + crystalline harmonics
 export function playEnter(stationIdx) {
+  if (!_soundEnabled) return
   const c = ctx(); if (!c) return
   const f = FREQS[stationIdx] || 528
   const now = c.currentTime
@@ -88,6 +94,7 @@ export function playEnter(stationIdx) {
 // Typewriter click — short noise burst, globally throttled so overlapping scramblers don't stack
 let _lastClick = 0
 export function playTypeClick() {
+  if (!_soundEnabled) return
   const c = ctx(); if (!c) return
   const now = c.currentTime
   if (now - _lastClick < 0.028) return   // ~35 clicks/sec max
@@ -110,6 +117,7 @@ export function playTypeClick() {
 
 // Crystal exit sound — descending tone
 export function playExit() {
+  if (!_soundEnabled) return
   const c = ctx(); if (!c) return
   const now = c.currentTime
   const o = c.createOscillator()

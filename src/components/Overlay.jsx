@@ -1,4 +1,5 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState } from 'react'
+import { playTypeClick, setSoundEnabled } from '../utils/audio'
 
 const STATIONS = [
   { label: 'COCMOC.RU',    sub: 'Creating the next onchain civilization',    tag: 'EST. 2024' },
@@ -19,11 +20,11 @@ function ScrambleText({ text }) {
     if (!ref.current || prev.current === text) return
     prev.current = text
     const el = ref.current
-    let frame = 0
-    let raf
+    let frame = 0, prevDone = 0, raf
     const run = () => {
       const p = Math.min(frame / 20, 1)
       const done = Math.floor(p * text.length)
+      if (done > prevDone) { playTypeClick(); prevDone = done }
       el.textContent = text.split('').map((ch, i) =>
         ch === ' ' ? ' ' : i < done ? ch : CHARS[Math.floor(Math.random() * CHARS.length)]
       ).join('')
@@ -43,6 +44,12 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
   const isBH = stationIdx >= 5
   const mono = "'Space Mono', monospace"
   const sans = "'Space Grotesk', sans-serif"
+  const [soundOn, setSoundOn] = useState(false)
+  const toggleSound = () => {
+    const next = !soundOn
+    setSoundOn(next)
+    setSoundEnabled(next)
+  }
 
   // Fade overlay out when entering black hole
   const overlayOpacity = inBlackHole ? 0 : 1
@@ -55,7 +62,8 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
       transition: 'opacity 1.5s ease',
     }}>
       {/* ── Logo top-left */}
-      <div style={{ position:'absolute', top:32, left:40, display:'flex', alignItems:'center', gap:10 }}>
+      <div style={{ position:'absolute', top:32, left:40, display:'flex', flexDirection:'column', gap:14 }}>
+      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
         <span style={{
           fontFamily: mono, fontSize: 11, color: 'rgba(140,80,255,0.8)',
           textShadow: '0 0 12px rgba(140,80,255,0.6)',
@@ -65,6 +73,26 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
         <span style={{ fontFamily:mono, fontSize:10, letterSpacing:'0.4em', color:'rgba(255,255,255,0.3)', fontWeight:700 }}>
           COCMOC.RU
         </span>
+      </div>
+
+        {/* ── Scroll hint + sound toggle */}
+        <div style={{ display:'flex', flexDirection:'column', gap:8, paddingLeft:2 }}>
+          <span style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.18em', color:'rgba(255,255,255,0.28)' }}>
+            <ScrambleText text="Scroll down to discover." />
+          </span>
+          <button
+            onClick={toggleSound}
+            style={{
+              fontFamily: mono, fontSize: 9, letterSpacing: '0.18em',
+              color: soundOn ? 'rgba(140,80,255,0.7)' : 'rgba(255,255,255,0.22)',
+              background: 'none', border: 'none', cursor: 'pointer',
+              padding: 0, textAlign: 'left', pointerEvents: 'auto',
+              transition: 'color 0.3s ease',
+            }}
+          >
+            {soundOn ? '♪ Sound: On' : '♪× Sound: Off'}
+          </button>
+        </div>
       </div>
 
       {/* ── Tag top-right */}
