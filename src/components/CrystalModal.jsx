@@ -120,7 +120,13 @@ export default function CrystalModal({ idx, onClose }) {
   const data = { ...base, title: text.title, tag: text.tag, body: text.body, stats: text.stats }
   const [phase, setPhase] = useState('entering')
   const [bodyLines, setBodyLines] = useState(() => data.body.map(() => ''))
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
   useEffect(() => { setBodyLines(data.body.map(() => '')) }, [lang])
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
   const spotRef = useRef(null)
   const mono = "'Space Mono', monospace"
   const sans = "'Space Grotesk', sans-serif"
@@ -210,26 +216,28 @@ export default function CrystalModal({ idx, onClose }) {
         cursor: 'default',
       }}
     >
-      {/* ── 3D CRYSTAL PREVIEW (right side) ──────────────────────────────── */}
-      <div style={{
-        position: 'absolute',
-        left: '50%',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        width: 'min(42vw, 520px)',
-        height: 'min(42vw, 520px)',
-        opacity: phase === 'visible' ? 1 : 0,
-        transition: 'opacity 0.9s 0.35s ease',
-        zIndex: 2,
-      }}>
-        <CrystalPreview
-          scaleY={data.scaleY}
-          seed={data.seed}
-          colA={data.colA}
-          colB={data.colB}
-          colC={data.colC}
-        />
-      </div>
+      {/* ── 3D CRYSTAL PREVIEW (desktop only) */}
+      {!isMobile && (
+        <div style={{
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          width: 'min(42vw, 520px)',
+          height: 'min(42vw, 520px)',
+          opacity: phase === 'visible' ? 1 : 0,
+          transition: 'opacity 0.9s 0.35s ease',
+          zIndex: 2,
+        }}>
+          <CrystalPreview
+            scaleY={data.scaleY}
+            seed={data.seed}
+            colA={data.colA}
+            colB={data.colB}
+            colC={data.colC}
+          />
+        </div>
+      )}
 
       {/* Flash on entry */}
       <div style={{
@@ -257,11 +265,12 @@ export default function CrystalModal({ idx, onClose }) {
           style={{
             fontFamily: mono, fontSize: 11, letterSpacing: '0.2em',
             color: 'rgba(255,255,255,0.25)', background: 'none', border: 'none',
-            cursor: 'pointer', padding: '8px 12px',
+            cursor: 'pointer', padding: isMobile ? '12px 16px' : '8px 12px',
             transition: 'color 0.25s ease',
+            pointerEvents: 'auto',
           }}
-          onMouseEnter={e => e.target.style.color = 'rgba(255,255,255,0.8)'}
-          onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.25)'}
+          onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}
+          onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.25)'}
         >
           ✕ ESC
         </button>

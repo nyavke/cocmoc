@@ -56,6 +56,13 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
   const [soundOn, setSoundOn] = useState(true)
   const [soundHoverKey, setSoundHoverKey] = useState(0)
   const [utcTime, setUtcTime] = useState('')
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   useEffect(() => { setSoundEnabled(true) }, [])
   useEffect(() => {
@@ -108,7 +115,7 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
       ))}
 
       {/* ── Logo + hints top-left */}
-      <div style={{ position:'absolute', top:32, left:40, display:'flex', flexDirection:'column', gap:14 }}>
+      <div style={{ position:'absolute', top:32, left: isMobile ? 16 : 40, display:'flex', flexDirection:'column', gap: isMobile ? 10 : 14 }}>
         <div style={{ display:'flex', alignItems:'center' }}>
           <span style={{ fontFamily:mono, fontSize:10, letterSpacing:'0.4em', color:'rgba(255,255,255,0.55)', fontWeight:700 }}>
             <ScrambleText text="COCMOC.RU" />
@@ -116,9 +123,11 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
         </div>
 
         <div style={{ display:'flex', flexDirection:'column', gap:8, paddingLeft:2 }}>
-          <span style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.18em', color:'rgba(255,255,255,0.45)' }}>
-            <ScrambleText text={t.ui.scroll} fast />
-          </span>
+          {!isMobile && (
+            <span style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.18em', color:'rgba(255,255,255,0.45)' }}>
+              <ScrambleText text={t.ui.scroll} fast />
+            </span>
+          )}
           <button
             onClick={toggleSound}
             onMouseEnter={() => setSoundHoverKey(k => k + 1)}
@@ -126,7 +135,7 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
               fontFamily: mono, fontSize: 9, letterSpacing: '0.18em',
               color: soundOn ? 'rgba(140,80,255,0.7)' : 'rgba(255,255,255,0.35)',
               background: 'none', border: 'none', cursor: 'pointer',
-              padding: 0, textAlign: 'left', pointerEvents: 'auto',
+              padding: isMobile ? '6px 0' : 0, textAlign: 'left', pointerEvents: 'auto',
               transition: 'color 0.3s ease',
             }}
           >
@@ -136,12 +145,12 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
       </div>
 
       {/* ── Tag top-right */}
-      <div style={{ position:'absolute', top:36, right:40, fontFamily:mono, fontSize:9, letterSpacing:'0.3em', color:'rgba(140,80,255,0.55)' }}>
+      <div style={{ position:'absolute', top:36, right: isMobile ? 16 : 40, fontFamily:mono, fontSize:9, letterSpacing:'0.3em', color:'rgba(140,80,255,0.55)' }}>
         ✦ <ScrambleText text={s.tag} />
       </div>
 
       {/* ── Main title bottom-left */}
-      <div style={{ position:'absolute', bottom:'8vh', left:40, maxWidth:'72vw' }}>
+      <div style={{ position:'absolute', bottom: isMobile ? '12vh' : '8vh', left: isMobile ? 16 : 40, maxWidth: isMobile ? '88vw' : '72vw' }}>
         <div style={{ fontFamily:mono, fontSize:9, letterSpacing:'0.4em', color:'rgba(140,80,255,0.6)', marginBottom:14 }}>
           <ScrambleText text={counter} />
         </div>
@@ -161,36 +170,57 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
         </p>
       </div>
 
-      {/* ── Right progress bar */}
-      <div style={{
-        position:'absolute', right:40, top:'50%', transform:'translateY(-50%)',
-        display:'flex', flexDirection:'column', alignItems:'center', gap:8,
-      }}>
-        <span style={{ fontFamily:mono, fontSize:8, letterSpacing:'0.3em', color:'rgba(255,255,255,0.25)', writingMode:'vertical-rl', marginBottom:12 }}>
-          <ScrambleText text={t.ui.scrollBar} />
-        </span>
-        <div style={{ width:1, height:120, background:'rgba(140,80,255,0.1)', position:'relative' }}>
-          <div style={{
-            position:'absolute', left:-1.5, width:4, height:4, borderRadius:'50%',
-            background:'rgba(140,80,255,0.8)',
-            boxShadow:'0 0 8px rgba(140,80,255,0.8)',
-            top:`${(Math.min(stationIdx, 4) / 4) * 116}px`,
-            transition:'top 0.4s ease',
-          }} />
+      {/* ── Right progress bar (desktop only) */}
+      {!isMobile && (
+        <div style={{
+          position:'absolute', right:40, top:'50%', transform:'translateY(-50%)',
+          display:'flex', flexDirection:'column', alignItems:'center', gap:8,
+        }}>
+          <span style={{ fontFamily:mono, fontSize:8, letterSpacing:'0.3em', color:'rgba(255,255,255,0.25)', writingMode:'vertical-rl', marginBottom:12 }}>
+            <ScrambleText text={t.ui.scrollBar} />
+          </span>
+          <div style={{ width:1, height:120, background:'rgba(140,80,255,0.1)', position:'relative' }}>
+            <div style={{
+              position:'absolute', left:-1.5, width:4, height:4, borderRadius:'50%',
+              background:'rgba(140,80,255,0.8)',
+              boxShadow:'0 0 8px rgba(140,80,255,0.8)',
+              top:`${(Math.min(stationIdx, 4) / 4) * 116}px`,
+              transition:'top 0.4s ease',
+            }} />
+          </div>
+          {[0,1,2,3,4].map(i => (
+            <div key={i} style={{
+              width: i===stationIdx ? 3 : 1,
+              height: i===stationIdx ? 3 : 1,
+              borderRadius:'50%',
+              background: i===stationIdx ? 'rgba(140,80,255,0.8)' : 'rgba(255,255,255,0.08)',
+              transition:'all 0.3s ease',
+            }} />
+          ))}
         </div>
-        {[0,1,2,3,4].map(i => (
-          <div key={i} style={{
-            width: i===stationIdx ? 3 : 1,
-            height: i===stationIdx ? 3 : 1,
-            borderRadius:'50%',
-            background: i===stationIdx ? 'rgba(140,80,255,0.8)' : 'rgba(255,255,255,0.08)',
-            transition:'all 0.3s ease',
-          }} />
-        ))}
-      </div>
+      )}
 
-      {/* ── Telemetry bottom-right */}
-      <div style={{
+      {/* ── Bottom-center station dots (mobile only) */}
+      {isMobile && (
+        <div style={{
+          position:'absolute', bottom: 24, left:'50%', transform:'translateX(-50%)',
+          display:'flex', gap:10, alignItems:'center',
+        }}>
+          {[0,1,2,3,4].map(i => (
+            <div key={i} style={{
+              width: i===stationIdx ? 6 : 4,
+              height: i===stationIdx ? 6 : 4,
+              borderRadius:'50%',
+              background: i===stationIdx ? 'rgba(140,80,255,0.9)' : 'rgba(255,255,255,0.15)',
+              boxShadow: i===stationIdx ? '0 0 8px rgba(140,80,255,0.7)' : 'none',
+              transition:'all 0.3s ease',
+            }} />
+          ))}
+        </div>
+      )}
+
+      {/* ── Telemetry bottom-right (desktop only) */}
+      {!isMobile && <div style={{
         position: 'absolute', bottom: '3vh', right: 40,
         display: 'flex', flexDirection: 'column', gap: 10,
         alignItems: 'flex-end',
@@ -224,7 +254,7 @@ export default function Overlay({ stationIdx, subProgress, inBlackHole }) {
             }} />
           ))}
         </div>
-      </div>
+      </div>}
 
       {/* ── UTC clock top-center */}
       <div style={{
