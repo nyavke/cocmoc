@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { T } from '../utils/i18n'
 
 const mono = "'Space Mono', monospace"
 const sans = "'Space Grotesk', sans-serif"
@@ -53,7 +54,7 @@ function StatusDot() {
   )
 }
 
-function LogoutBtn({ onClick }) {
+function LogoutBtn({ onClick, label }) {
   const [hov, setHov] = useState(false)
   return (
     <button
@@ -69,16 +70,17 @@ function LogoutBtn({ onClick }) {
         transition: 'all 0.3s ease',
       }}
     >
-      ВЫХОД ИЗ СИСТЕМЫ
+      {label}
     </button>
   )
 }
 
-export default function ProfileView({ user, onLogout }) {
-  const name        = user.user_metadata?.full_name || user.email?.split('@')[0] || 'CITIZEN'
-  const provider    = (user.app_metadata?.provider || 'email').toUpperCase()
-  const cosmicId    = user.id?.replace(/-/g, '').slice(0, 16).toUpperCase()
-  const joined      = new Date(user.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()
+export default function ProfileView({ user, onLogout, lang = 'en' }) {
+  const a        = T[lang].auth
+  const name     = user.user_metadata?.full_name || user.email?.split('@')[0] || 'CITIZEN'
+  const provider = (user.app_metadata?.provider || 'email').toUpperCase()
+  const cosmicId = user.id?.replace(/-/g, '').slice(0, 16).toUpperCase()
+  const joined   = new Date(user.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
@@ -86,10 +88,10 @@ export default function ProfileView({ user, onLogout }) {
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
         <div style={{ fontFamily: mono, fontSize: 8, letterSpacing: '0.5em', color: `rgba(${G}, 0.4)`, marginBottom: 8 }}>
-          ◈ COSMIC IDENTITY
+          {a.profile}
         </div>
         <div style={{ fontFamily: sans, fontWeight: 300, fontSize: 'clamp(18px, 2.5vw, 24px)', color: 'rgba(255,255,255,0.88)', letterSpacing: '0.04em' }}>
-          CITIZEN PROFILE
+          {a.citizen}
         </div>
       </div>
 
@@ -112,24 +114,24 @@ export default function ProfileView({ user, onLogout }) {
           </div>
           <div style={{ marginTop: 8, display: 'flex', alignItems: 'center' }}>
             <StatusDot />
-            <span style={{ fontFamily: mono, fontSize: 8, letterSpacing: '0.3em', color: 'rgba(80,255,160,0.7)' }}>ONLINE</span>
+            <span style={{ fontFamily: mono, fontSize: 8, letterSpacing: '0.3em', color: 'rgba(80,255,160,0.7)' }}>{a.online}</span>
           </div>
         </div>
       </div>
 
       {/* Fields */}
       <div style={{ marginBottom: 20 }}>
-        <Field label="COSMIC.ID"  value={cosmicId + '···'} accent />
-        <Field label="CLEARANCE"  value="CITIZEN · LVL 1"  accent />
-        <Field label="PROVIDER"   value={provider} />
-        <Field label="JOINED"     value={joined} />
-        <Field label="NODE"       value="SINGULARITY" />
+        <Field label={a.cosmicId}  value={cosmicId + '···'} accent />
+        <Field label={a.clearance} value="CITIZEN · LVL 1"  accent />
+        <Field label={a.provider}  value={provider} />
+        <Field label={a.joined}    value={joined} />
+        <Field label={a.node}      value="SINGULARITY" />
       </div>
 
       {/* Power bar */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-          <span style={{ fontFamily: mono, fontSize: 8, letterSpacing: '0.3em', color: 'rgba(255,255,255,0.18)' }}>COSMIC POWER</span>
+          <span style={{ fontFamily: mono, fontSize: 8, letterSpacing: '0.3em', color: 'rgba(255,255,255,0.18)' }}>{a.power}</span>
           <span style={{ fontFamily: mono, fontSize: 8, letterSpacing: '0.2em', color: `rgba(${G}, 0.6)` }}>LVL 1 / ∞</span>
         </div>
         <div style={{ height: 3, background: `rgba(${G}, 0.08)`, borderRadius: 0, overflow: 'hidden' }}>
@@ -142,7 +144,7 @@ export default function ProfileView({ user, onLogout }) {
         </div>
       </div>
 
-      <LogoutBtn onClick={onLogout} />
+      <LogoutBtn onClick={onLogout} label={a.logout} />
 
       <style>{`
         @keyframes avatarPulse {

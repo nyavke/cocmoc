@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import CrystalPreview from './CrystalPreview'
 import ProfileView from './ProfileView'
+import { useLang } from '../context/LangContext'
+import { T } from '../utils/i18n'
 
 const CRYSTAL = {
   scaleY: 2.3, seed: 7,
@@ -106,6 +108,8 @@ function ErrMsg({ msg }) {
 }
 
 export default function AuthScreen({ visible }) {
+  const { lang } = useLang()
+  const a = T[lang].auth
   const [tab,      setTab]      = useState('login')
   const [step,     setStep]     = useState('form')
   const [email,    setEmail]    = useState('')
@@ -247,22 +251,22 @@ export default function AuthScreen({ visible }) {
             {/* Header */}
             <div style={{ marginBottom: 24 }}>
               <div style={{ fontFamily: mono, fontSize: 8, letterSpacing: '0.5em', color: `rgba(${G}, 0.4)`, marginBottom: 8 }}>
-                ◈ IDENTITY PROTOCOL
+                {a.protocol}
               </div>
               <div style={{ fontFamily: sans, fontWeight: 300, fontSize: 'clamp(18px, 2.5vw, 24px)', color: 'rgba(255,255,255,0.88)', letterSpacing: '0.04em' }}>
-                SYSTEM ACCESS{blink ? '▋' : ' '}
+                {a.access}{blink ? '▋' : ' '}
               </div>
             </div>
 
             <div style={{ height: 1, background: `linear-gradient(to right, rgba(${G}, 0.25), transparent)`, marginBottom: 22 }} />
 
             {user ? (
-              <ProfileView user={user} onLogout={handleLogout} />
+              <ProfileView user={user} onLogout={handleLogout} lang={lang} />
 
             ) : step === 'verify' ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div style={{ fontFamily: sans, fontSize: 13, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.03em' }}>
-                  Код отправлен на <span style={{ color: `rgba(${G}, 0.7)` }}>{email}</span>
+                  {a.codeSent} <span style={{ color: `rgba(${G}, 0.7)` }}>{email}</span>
                 </div>
                 <form onSubmit={handleVerify} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <input
@@ -280,11 +284,11 @@ export default function AuthScreen({ visible }) {
                   />
                   <ErrMsg msg={error} />
                   <Btn submit disabled={loading || code.length < 1}>
-                    {loading ? 'ПРОВЕРКА...' : 'ПОДТВЕРДИТЬ'}
+                    {loading ? a.checking : a.confirmBtn}
                   </Btn>
                 </form>
                 <button onClick={() => { setStep('form'); clear() }} style={{ background: 'none', border: 'none', fontFamily: mono, fontSize: 9, letterSpacing: '0.25em', color: 'rgba(255,255,255,0.2)', cursor: 'pointer', padding: 0, textAlign: 'left' }}>
-                  ← НАЗАД
+                  {a.back}
                 </button>
               </div>
 
@@ -292,7 +296,7 @@ export default function AuthScreen({ visible }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                 {/* Tabs */}
                 <div style={{ display: 'flex' }}>
-                  {[['login', 'ВОЙТИ'], ['register', 'РЕГИСТРАЦИЯ']].map(([t, label]) => (
+                  {[['login', a.tabLogin], ['register', a.tabReg]].map(([t, label]) => (
                     <button key={t} onClick={() => { setTab(t); clear() }} style={{
                       flex: 1, background: 'none', border: 'none',
                       borderBottom: `1px solid rgba(${G}, ${tab === t ? 0.55 : 0.1})`,
@@ -308,27 +312,27 @@ export default function AuthScreen({ visible }) {
                 </div>
 
                 <form onSubmit={tab === 'login' ? handleLogin : handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <Input type="email" placeholder="EMAIL" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required />
+                  <Input type="email" placeholder={a.email} value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required />
                   <Input
                     type="password"
-                    placeholder={tab === 'login' ? 'ПАРОЛЬ' : 'ПАРОЛЬ · МИН. 6 СИМВОЛОВ'}
+                    placeholder={tab === 'login' ? a.password : a.passwordNew}
                     value={password} onChange={e => setPassword(e.target.value)}
                     autoComplete={tab === 'login' ? 'current-password' : 'new-password'}
                     minLength={6} required
                   />
                   <ErrMsg msg={error} />
                   <Btn submit disabled={loading}>
-                    {loading ? '...' : tab === 'login' ? 'ВОЙТИ В СИСТЕМУ' : 'СОЗДАТЬ АККАУНТ'}
+                    {loading ? '...' : tab === 'login' ? a.submit : a.submitReg}
                   </Btn>
                 </form>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div style={{ flex: 1, height: 1, background: `rgba(${G}, 0.1)` }} />
-                  <span style={{ fontFamily: mono, fontSize: 8, letterSpacing: '0.3em', color: 'rgba(255,255,255,0.12)' }}>ИЛИ</span>
+                  <span style={{ fontFamily: mono, fontSize: 8, letterSpacing: '0.3em', color: 'rgba(255,255,255,0.12)' }}>{a.or}</span>
                   <div style={{ flex: 1, height: 1, background: `rgba(${G}, 0.1)` }} />
                 </div>
 
-                <Btn onClick={handleGoogle} ghost>G · ПРОДОЛЖИТЬ ЧЕРЕЗ GOOGLE</Btn>
+                <Btn onClick={handleGoogle} ghost>{a.google}</Btn>
               </div>
             )}
           </div>
