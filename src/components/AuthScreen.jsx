@@ -153,7 +153,7 @@ export default function AuthScreen({ visible }) {
     clear()
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo: 'https://cocmoc.ru' },
     })
   }
 
