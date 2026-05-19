@@ -39,11 +39,17 @@ function Avatar({ user }) {
   )
 }
 
-function Field({ label, value, accent }) {
+function Field({ label, value, accent, gold }) {
+  const valueColor = gold
+    ? 'rgba(255, 200, 80, 0.95)'
+    : accent ? `rgba(${G}, 0.75)` : 'rgba(255,255,255,0.5)'
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: `1px solid rgba(${G}, 0.06)` }}>
       <span style={{ fontFamily: mono, fontSize: 8, letterSpacing: '0.3em', color: 'rgba(255,255,255,0.18)' }}>{label}</span>
-      <span style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.12em', color: accent ? `rgba(${G}, 0.75)` : 'rgba(255,255,255,0.5)' }}>{value}</span>
+      <span style={{
+        fontFamily: mono, fontSize: 9, letterSpacing: '0.12em', color: valueColor,
+        textShadow: gold ? '0 0 10px rgba(255,200,80,0.5)' : 'none',
+      }}>{value}</span>
     </div>
   )
 }
@@ -75,8 +81,11 @@ function LogoutBtn({ onClick, label }) {
   )
 }
 
+const OWNER_ID = '4d9d3a41-95ae-4cdc-9710-6b447be539d3'
+
 export default function ProfileView({ user, onLogout, lang = 'en' }) {
   const a        = T[lang].auth
+  const isOwner  = user.id === OWNER_ID
   const name     = user.user_metadata?.full_name || user.email?.split('@')[0] || 'CITIZEN'
   const provider = (user.app_metadata?.provider || 'email').toUpperCase()
   const cosmicId = user.id?.replace(/-/g, '').slice(0, 16).toUpperCase()
@@ -122,7 +131,7 @@ export default function ProfileView({ user, onLogout, lang = 'en' }) {
       {/* Fields */}
       <div style={{ marginBottom: 20 }}>
         <Field label={a.cosmicId}  value={cosmicId + '···'} accent />
-        <Field label={a.clearance} value="CITIZEN · LVL 1"  accent />
+        <Field label={a.clearance} value={isOwner ? 'OWNER' : 'CITIZEN · LVL 1'} accent gold={isOwner} />
         <Field label={a.provider}  value={provider} />
         <Field label={a.joined}    value={joined} />
         <Field label={a.node}      value="SINGULARITY" />
