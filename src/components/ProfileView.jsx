@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { T } from '../utils/i18n'
+import { supabase } from '../lib/supabase'
 
 const mono = "'Space Mono', monospace"
 const sans = "'Space Grotesk', sans-serif"
@@ -81,15 +82,20 @@ function LogoutBtn({ onClick, label }) {
   )
 }
 
-const OWNER_ID = '4d9d3a41-95ae-4cdc-9710-6b447be539d3'
-
 export default function ProfileView({ user, onLogout, lang = 'en' }) {
   const a        = T[lang].auth
-  const isOwner  = user.id === OWNER_ID
+  const [role,   setRole]   = useState('citizen')
   const name     = user.user_metadata?.full_name || user.email?.split('@')[0] || 'CITIZEN'
   const provider = (user.app_metadata?.provider || 'email').toUpperCase()
   const cosmicId = user.id?.replace(/-/g, '').slice(0, 16).toUpperCase()
   const joined   = new Date(user.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()
+
+  useEffect(() => {
+    supabase.from('profiles').select('role').eq('id', user.id).single()
+      .then(({ data }) => { if (data?.role) setRole(data.role) })
+  }, [user.id])
+
+  const isOwner = role === 'owner'
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
