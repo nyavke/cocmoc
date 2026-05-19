@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import CrystalPreview from './CrystalPreview'
+import ProfileView from './ProfileView'
 
 const CRYSTAL = {
   scaleY: 2.3, seed: 7,
@@ -256,13 +257,7 @@ export default function AuthScreen({ visible }) {
             <div style={{ height: 1, background: `linear-gradient(to right, rgba(${G}, 0.25), transparent)`, marginBottom: 22 }} />
 
             {user ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-                <div>
-                  <div style={{ fontFamily: mono, fontSize: 8, letterSpacing: '0.4em', color: `rgba(${G}, 0.4)`, marginBottom: 8 }}>ИДЕНТИФИКАЦИЯ ПОДТВЕРЖДЕНА</div>
-                  <div style={{ fontFamily: sans, fontSize: 14, color: 'rgba(255,255,255,0.6)', wordBreak: 'break-all' }}>{user.email}</div>
-                </div>
-                <Btn onClick={handleLogout} ghost>ВЫХОД ИЗ СИСТЕМЫ</Btn>
-              </div>
+              <ProfileView user={user} onLogout={handleLogout} />
 
             ) : step === 'verify' ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
