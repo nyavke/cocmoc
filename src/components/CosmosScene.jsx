@@ -5,7 +5,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import Overlay from './Overlay'
-import ContactScreen from './ContactScreen'
+import AuthScreen from './AuthScreen'
 import CrystalModal from './CrystalModal'
 import { playChime, playEnter, startAmbient, stopAmbient, setAmbientMood } from '../utils/audio'
 import { buildCrystal, crystalMat } from '../utils/crystal'
@@ -481,7 +481,7 @@ export default function CosmosScene({ entered = false }) {
     <>
       <div ref={mountRef} style={{ position:'fixed', inset:0, zIndex:0 }} />
       {entered && <Overlay stationIdx={stationIdx} subProgress={subProgress} inBlackHole={inBlackHole} />}
-      {entered && <ContactScreen visible={inBlackHole} />}
+      {entered && <AuthScreen visible={inBlackHole} />}
       {entered && activeCrystal !== null && (
         <CrystalModal idx={activeCrystal} onClose={() => setActiveCrystal(null)} />
       )}
