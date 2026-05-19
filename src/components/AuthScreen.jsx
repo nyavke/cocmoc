@@ -273,7 +273,7 @@ export default function AuthScreen({ visible }) {
                   <input
                     type="text" placeholder="_ _ _ _ _ _"
                     value={code} onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
-                    maxLength={6} required
+                    maxLength={8} required
                     style={{
                       fontFamily: mono, fontSize: 26, letterSpacing: '0.6em', textAlign: 'center',
                       background: `rgba(${G}, 0.04)`,
@@ -284,7 +284,7 @@ export default function AuthScreen({ visible }) {
                     }}
                   />
                   <ErrMsg msg={error} />
-                  <Btn submit disabled={loading || code.length < 6}>
+                  <Btn submit disabled={loading || code.length < 1}>
                     {loading ? 'ПРОВЕРКА...' : 'ПОДТВЕРДИТЬ'}
                   </Btn>
                 </form>
